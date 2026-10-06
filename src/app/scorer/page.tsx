@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import Header from '../../components/Header';
 import ScoreHero from '../../components/ScoreHero';
 import MatchesBento from '../../components/MatchesBento';
@@ -9,7 +8,7 @@ import GradeRankingsBento from '../../components/GradeRankingsBento';
 import CheeringBoardBento from '../../components/CheeringBoardBento';
 import TournamentBracketModal from '../../components/TournamentBracketModal';
 import { useSportsData } from '../../lib/useSportsData';
-import { Swords, RotateCcw, ShieldAlert, Eye, Share2, Check } from 'lucide-react';
+import { Swords, RotateCcw, ShieldAlert, Share2, Check } from 'lucide-react';
 
 export default function ScorerAdminPage() {
   const [darkMode, setDarkMode] = useState<boolean>(true);
@@ -86,14 +85,6 @@ export default function ScorerAdminPage() {
             <RotateCcw className="w-3.5 h-3.5" />
             <span>데이터 초기화</span>
           </button>
-
-          <Link
-            href="/"
-            className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold flex items-center gap-1 transition-colors shadow-sm"
-          >
-            <Eye className="w-3.5 h-3.5" />
-            <span>학생용 화면(조회전용) 보기</span>
-          </Link>
         </div>
       </div>
 
@@ -160,10 +151,6 @@ export default function ScorerAdminPage() {
           >
             <Swords className="w-3.5 h-3.5" /> 대진표 안내
           </button>
-          <span>•</span>
-          <Link href="/" className="text-blue-500 hover:underline flex items-center gap-1 font-bold">
-            <Eye className="w-3.5 h-3.5" /> 학생용 보기 화면
-          </Link>
           <span>•</span>
           <span>© 2026 무선중학교</span>
         </div>

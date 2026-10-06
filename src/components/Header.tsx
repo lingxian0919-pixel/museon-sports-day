@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
-import { Sun, Moon, Flame, Trophy, Radio, Users, ShieldAlert, Eye, Share2, Check } from 'lucide-react';
+import { Sun, Moon, Flame, Trophy, Radio, Users, Share2, Check } from 'lucide-react';
 import { ClassRanking } from '../lib/types';
 
 interface HeaderProps {
@@ -77,26 +76,8 @@ export default function Header({
           )}
         </div>
 
-        {/* Right: Mode Switcher, Share Link, Dark Mode */}
+        {/* Right: Share Link, Dark Mode */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          {/* Mode Switcher Button */}
-          {isScorerMode ? (
-            <Link
-              href="/"
-              className="px-3 py-1.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-bold border border-blue-500/30 flex items-center gap-1.5 transition-all"
-            >
-              <Eye className="w-3.5 h-3.5" />
-              <span>학생용 보기 화면으로</span>
-            </Link>
-          ) : (
-            <Link
-              href="/scorer"
-              className="px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 text-xs font-bold border border-amber-500/30 flex items-center gap-1.5 transition-all shadow-sm"
-            >
-              <ShieldAlert className="w-3.5 h-3.5" />
-              <span>기록원 모드 전환</span>
-            </Link>
-          )}
 
           {/* Copy URL button */}
           <button

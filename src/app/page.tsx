@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import Header from '../components/Header';
 import ScoreHero from '../components/ScoreHero';
 import MatchesBento from '../components/MatchesBento';
@@ -9,7 +8,7 @@ import GradeRankingsBento from '../components/GradeRankingsBento';
 import CheeringBoardBento from '../components/CheeringBoardBento';
 import TournamentBracketModal from '../components/TournamentBracketModal';
 import { useSportsData } from '../lib/useSportsData';
-import { Swords, Bell, Heart, ShieldAlert, Eye } from 'lucide-react';
+import { Swords, Eye } from 'lucide-react';
 
 export default function StudentViewerPage() {
   const [darkMode, setDarkMode] = useState<boolean>(true);
@@ -50,14 +49,6 @@ export default function StudentViewerPage() {
             <Swords className="w-3.5 h-3.5" />
             <span>대진표 트리</span>
           </button>
-          <span className="text-slate-300 dark:text-slate-600">|</span>
-          <Link
-            href="/scorer"
-            className="flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400 hover:underline"
-          >
-            <ShieldAlert className="w-3.5 h-3.5" />
-            <span>기록원 모드 이동</span>
-          </Link>
         </div>
       </div>
 
@@ -122,10 +113,6 @@ export default function StudentViewerPage() {
           >
             <Swords className="w-3.5 h-3.5" /> 대진표 안내
           </button>
-          <span>•</span>
-          <Link href="/scorer" className="text-amber-500 hover:underline flex items-center gap-1 font-bold">
-            <ShieldAlert className="w-3.5 h-3.5" /> 기록원 페이지
-          </Link>
           <span>•</span>
           <span>© 2026 무선중학교</span>
         </div>
