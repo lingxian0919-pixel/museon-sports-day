@@ -1,19 +1,39 @@
 'use client';
 
-import React from 'react';
-import { Sun, Moon, Flame, Trophy, Radio, Users } from 'lucide-react';
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { Sun, Moon, Flame, Trophy, Radio, Users, ShieldAlert, Eye, Share2, Check } from 'lucide-react';
 import { ClassRanking } from '../lib/types';
 
 interface HeaderProps {
   darkMode: boolean;
   setDarkMode: (val: boolean) => void;
   topClass?: ClassRanking;
+  isScorerMode?: boolean;
 }
 
-export default function Header({ darkMode, setDarkMode, topClass }: HeaderProps) {
+export default function Header({
+  darkMode,
+  setDarkMode,
+  topClass,
+  isScorerMode = false
+}: HeaderProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyLink = () => {
+    if (typeof window !== 'undefined') {
+      const url = isScorerMode
+        ? `${window.location.origin}/scorer`
+        : window.location.origin;
+      navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   return (
     <header className="sticky top-4 z-40 mb-6">
-      <div className="glass-panel px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="glass-panel px-6 py-4 flex flex-col lg:flex-row items-center justify-between gap-4">
         {/* Brand & Live status */}
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
@@ -35,17 +55,17 @@ export default function Header({ darkMode, setDarkMode, topClass }: HeaderProps)
           </div>
         </div>
 
-        {/* Center: Live 18 Classes & Current Leader Summary */}
-        <div className="hidden md:flex items-center gap-3 bg-slate-200/50 dark:bg-slate-800/60 backdrop-blur-sm px-4 py-2 rounded-full border border-slate-300/40 dark:border-slate-700/50 text-xs">
+        {/* Center: Live Leader & 18 Classes Summary */}
+        <div className="hidden xl:flex items-center gap-3 bg-slate-200/50 dark:bg-slate-800/60 backdrop-blur-sm px-4 py-2 rounded-full border border-slate-300/40 dark:border-slate-700/50 text-xs">
           <div className="flex items-center gap-1.5 font-medium text-slate-600 dark:text-slate-300">
             <Users className="w-3.5 h-3.5 text-indigo-500" />
-            <span>총 18개 학급 (1학년 5팀 • 2학년 7팀 • 3학년 6팀)</span>
+            <span>총 18개 학급 리그</span>
           </div>
           {topClass && (
             <>
               <span className="text-slate-300 dark:text-slate-600">|</span>
               <div className="flex items-center gap-1.5">
-                <span className="text-amber-500 font-black">🥇 1위</span>
+                <span className="text-amber-500 font-black">🥇 선두</span>
                 <span className="font-bold text-slate-800 dark:text-slate-100">
                   {topClass.grade}학년 {topClass.classNum}반
                 </span>
@@ -57,22 +77,59 @@ export default function Header({ darkMode, setDarkMode, topClass }: HeaderProps)
           )}
         </div>
 
-        {/* Right: Quick actions & Dark mode toggle */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-semibold border border-amber-500/20">
-            <Flame className="w-4 h-4 text-amber-500 animate-bounce" />
-            <span>열정 한마당</span>
-          </div>
+        {/* Right: Mode Switcher, Share Link, Dark Mode */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          {/* Mode Switcher Button */}
+          {isScorerMode ? (
+            <Link
+              href="/"
+              className="px-3 py-1.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-bold border border-blue-500/30 flex items-center gap-1.5 transition-all"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>학생용 보기 화면으로</span>
+            </Link>
+          ) : (
+            <Link
+              href="/scorer"
+              className="px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 text-xs font-bold border border-amber-500/30 flex items-center gap-1.5 transition-all shadow-sm"
+            >
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span>기록원 모드 전환</span>
+            </Link>
+          )}
 
+          {/* Copy URL button */}
+          <button
+            onClick={handleCopyLink}
+            title={isScorerMode ? '기록원용 전용 링크 복사' : '학생 공유용 링크 복사'}
+            className="px-3 py-1.5 rounded-xl glass-card hover:bg-slate-200/60 dark:hover:bg-slate-700/60 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+          >
+            {copied ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-500" />
+                <span className="text-emerald-500 font-bold">복사됨!</span>
+              </>
+            ) : (
+              <>
+                <Share2 className="w-3.5 h-3.5 text-indigo-500" />
+                <span className="hidden sm:inline">
+                  {isScorerMode ? '기록원 링크 복사' : '학생용 링크 복사'}
+                </span>
+                <span className="sm:hidden">공유</span>
+              </>
+            )}
+          </button>
+
+          {/* Dark Mode toggle */}
           <button
             onClick={() => setDarkMode(!darkMode)}
             aria-label="테마 전환"
-            className="p-2.5 rounded-xl glass-card hover:bg-slate-200/60 dark:hover:bg-slate-700/60 text-slate-700 dark:text-slate-200 transition-transform active:scale-95 shadow-sm"
+            className="p-2 rounded-xl glass-card hover:bg-slate-200/60 dark:hover:bg-slate-700/60 text-slate-700 dark:text-slate-200 transition-transform active:scale-95 shadow-sm"
           >
             {darkMode ? (
-              <Sun className="w-5 h-5 text-amber-400 hover:rotate-45 transition-transform" />
+              <Sun className="w-4 h-4 text-amber-400 hover:rotate-45 transition-transform" />
             ) : (
-              <Moon className="w-5 h-5 text-indigo-600 hover:-rotate-12 transition-transform" />
+              <Moon className="w-4 h-4 text-indigo-600 hover:-rotate-12 transition-transform" />
             )}
           </button>
         </div>

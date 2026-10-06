@@ -1,18 +1,24 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Trophy, Clock, MapPin, Plus, CheckCircle2, Award, Swords, Sparkles } from 'lucide-react';
+import { Trophy, Clock, MapPin, Plus, CheckCircle2, Award, ShieldAlert, Eye } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { Match, SportCategory } from '../lib/types';
+import { Match } from '../lib/types';
 import { SPORT_CATEGORIES } from '../lib/mockData';
 
 interface MatchesBentoProps {
   matches: Match[];
-  onScoreUpdate: (matchId: string, team: 'A' | 'B', delta: number) => void;
-  onFinishMatch: (matchId: string, winner: 'teamA' | 'teamB') => void;
+  isScorerMode?: boolean;
+  onScoreUpdate?: (matchId: string, team: 'A' | 'B', delta: number) => void;
+  onFinishMatch?: (matchId: string, winner: 'teamA' | 'teamB') => void;
 }
 
-export default function MatchesBento({ matches, onScoreUpdate, onFinishMatch }: MatchesBentoProps) {
+export default function MatchesBento({
+  matches,
+  isScorerMode = false,
+  onScoreUpdate,
+  onFinishMatch
+}: MatchesBentoProps) {
   const [selectedSport, setSelectedSport] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'in_progress' | 'completed' | 'scheduled'>('all');
 
@@ -29,7 +35,9 @@ export default function MatchesBento({ matches, onScoreUpdate, onFinishMatch }: 
       origin: { y: 0.6 },
       colors: ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'],
     });
-    onFinishMatch(match.id, winner);
+    if (onFinishMatch) {
+      onFinishMatch(match.id, winner);
+    }
   };
 
   const getSportName = (sportId: string) => {
@@ -57,12 +65,24 @@ export default function MatchesBento({ matches, onScoreUpdate, onFinishMatch }: 
             <span className="p-2 rounded-xl bg-indigo-500/10 text-indigo-500 dark:text-indigo-400">
               <Trophy className="w-5 h-5" />
             </span>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-              실시간 18팀 종목별 대진표 & 경기 현황
-            </h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                실시간 18팀 종목별 대진표 & 경기 현황
+              </h2>
+              {isScorerMode ? (
+                <span className="text-[10px] bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold px-2 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1">
+                  <ShieldAlert className="w-3 h-3" /> 기록원 입력 모드
+                </span>
+              ) : (
+                <span className="text-[10px] bg-blue-500/15 text-blue-600 dark:text-blue-400 font-bold px-2 py-0.5 rounded-full border border-blue-500/20 flex items-center gap-1">
+                  <Eye className="w-3 h-3" /> 학생 조회 전용
+                </span>
+              )}
+            </div>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             1학년(1~5반), 2학년(1~7반), 3학년(1~6반) 총 18개 팀의 실시간 경기 현황입니다.
+            {!isScorerMode && ' (점수 조작 방지 뷰 모드)'}
           </p>
         </div>
 
@@ -234,23 +254,25 @@ export default function MatchesBento({ matches, onScoreUpdate, onFinishMatch }: 
                   </span>
                 </div>
 
-                {/* Teacher / Admin Controls (실시간 득점 & 우승 판정) */}
-                {match.status === 'in_progress' && (
-                  <div className="mt-3 pt-3 border-t border-slate-200/50 dark:border-slate-700/50 flex flex-col gap-2">
-                    <div className="flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-300">
-                      <span>실시간 득점 조작</span>
-                      <span className="text-[10px] text-slate-400">교사 / 기록원 전용</span>
+                {/* 기록원 전용 조작 패널 (isScorerMode=true 일 때만 노출!) */}
+                {isScorerMode && match.status === 'in_progress' && (
+                  <div className="mt-3 pt-3 border-t border-amber-500/20 bg-amber-500/5 -mx-4 -mb-4 p-3 rounded-b-xl flex flex-col gap-2">
+                    <div className="flex items-center justify-between text-xs font-semibold text-amber-700 dark:text-amber-400">
+                      <span className="flex items-center gap-1">
+                        <ShieldAlert className="w-3.5 h-3.5" /> 실시간 득점 조작
+                      </span>
+                      <span className="text-[10px] opacity-75">기록원 전용 패널</span>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <button
-                        onClick={() => onScoreUpdate(match.id, 'A', 1)}
-                        className="py-1.5 px-2 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center gap-1 transition-colors truncate"
+                        onClick={() => onScoreUpdate && onScoreUpdate(match.id, 'A', 1)}
+                        className="py-1.5 px-2 rounded-lg bg-indigo-600/15 hover:bg-indigo-600/25 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center justify-center gap-1 transition-colors truncate"
                       >
                         <Plus className="w-3.5 h-3.5 shrink-0" /> {match.teamA.name} +1점
                       </button>
                       <button
-                        onClick={() => onScoreUpdate(match.id, 'B', 1)}
-                        className="py-1.5 px-2 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center gap-1 transition-colors truncate"
+                        onClick={() => onScoreUpdate && onScoreUpdate(match.id, 'B', 1)}
+                        className="py-1.5 px-2 rounded-lg bg-purple-600/15 hover:bg-purple-600/25 text-purple-700 dark:text-purple-300 font-bold text-xs flex items-center justify-center gap-1 transition-colors truncate"
                       >
                         <Plus className="w-3.5 h-3.5 shrink-0" /> {match.teamB.name} +1점
                       </button>
