@@ -7,7 +7,6 @@ import ScoreHero from '../components/ScoreHero';
 import MatchesBento from '../components/MatchesBento';
 import GradeRankingsBento from '../components/GradeRankingsBento';
 import CheeringBoardBento from '../components/CheeringBoardBento';
-import LiveRankingsBento from '../components/LiveRankingsBento';
 import TournamentBracketModal from '../components/TournamentBracketModal';
 import { useSportsData } from '../lib/useSportsData';
 import { Swords, Bell, Heart, ShieldAlert, Eye } from 'lucide-react';
@@ -95,17 +94,9 @@ export default function StudentViewerPage() {
         </div>
       </div>
 
-      {/* Secondary Bento Grid: Community Board & Hall of Fame Rankings */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
-        {/* Bento Card 3: Cheering Community Board (Supabase posts) (6 cols) */}
-        <div className="lg:col-span-6">
-          <CheeringBoardBento />
-        </div>
-
-        {/* Bento Card 4: Live Hall of Fame Rankings (Supabase rankings) (6 cols) */}
-        <div className="lg:col-span-6">
-          <LiveRankingsBento />
-        </div>
+      {/* Cheering Community Board (Supabase posts) */}
+      <div className="mb-8">
+        <CheeringBoardBento />
       </div>
 
       {/* Footer */}
