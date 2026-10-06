@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Award, Zap, Plus, Sparkles, UserCheck } from 'lucide-react';
+import { Zap, Plus, Sparkles } from 'lucide-react';
 import { RankingItem } from '../lib/types';
 import { getRankings, addRankingScore, isSupabaseConfigured } from '../lib/supabase';
 
@@ -74,7 +74,7 @@ export default function LiveRankingsBento() {
           <div className="grid grid-cols-2 gap-2">
             <input
               type="text"
-              placeholder="닉네임 / 팀명 (예: 2-3 농구단)"
+              placeholder="학급명 / 선수 (예: 2학년 3반)"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               required

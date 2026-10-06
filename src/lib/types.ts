@@ -1,10 +1,7 @@
-export type TeamColor = 'blue' | 'white';
-
 export interface Team {
   name: string;
   grade: number; // 1, 2, 3
-  classNum: number;
-  color: TeamColor;
+  classNum: number; // 1학년: 1~5, 2학년: 1~7, 3학년: 1~6
 }
 
 export type MatchStatus = 'scheduled' | 'in_progress' | 'completed';
@@ -12,13 +9,13 @@ export type MatchStatus = 'scheduled' | 'in_progress' | 'completed';
 export interface Match {
   id: string;
   sport: string;
-  round: '8강' | '4강' | '3·4위전' | '결승' | '리그전';
+  round: '예선' | '8강' | '4강' | '3·4위전' | '결승' | '리그전';
   teamA: Team;
   teamB: Team;
   scoreA: number;
   scoreB: number;
   status: MatchStatus;
-  winner?: TeamColor | 'draw';
+  winnerTeam?: 'teamA' | 'teamB' | 'draw';
   time: string;
   court: string;
   pointsForWinner: number;
@@ -35,19 +32,17 @@ export interface SportCategory {
 
 export interface GradeScore {
   grade: number;
-  blueScore: number;
-  whiteScore: number;
   totalScore: number;
   goldMedals: number;
   silverMedals: number;
   bronzeMedals: number;
+  classesCount: number; // 1학년: 5, 2학년: 7, 3학년: 6
 }
 
 export interface ClassRanking {
   rank: number;
   grade: number;
   classNum: number;
-  color: TeamColor;
   score: number;
   wins: number;
   losses: number;

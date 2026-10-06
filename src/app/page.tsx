@@ -15,7 +15,7 @@ import {
 } from '../lib/mockData';
 import { Match, GradeScore, ClassRanking } from '../lib/types';
 import { addRankingScore } from '../lib/supabase';
-import { Swords, Calendar, HelpCircle, Bell, Heart } from 'lucide-react';
+import { Swords, Bell, Heart } from 'lucide-react';
 
 export default function SportsDayPage() {
   const [darkMode, setDarkMode] = useState<boolean>(true);
@@ -33,10 +33,6 @@ export default function SportsDayPage() {
     }
   }, [darkMode]);
 
-  // Calculate total Blue & White team points
-  const totalBlue = gradeScores.reduce((sum, g) => sum + g.blueScore, 0);
-  const totalWhite = gradeScores.reduce((sum, g) => sum + g.whiteScore, 0);
-
   // Handler for live score updates (+1, -1)
   const handleScoreUpdate = (matchId: string, team: 'A' | 'B', delta: number) => {
     setMatches((prev) =>
@@ -51,13 +47,13 @@ export default function SportsDayPage() {
     );
   };
 
-  // Handler for completing a match & awarding points to grade and class
-  const handleFinishMatch = (matchId: string, winner: 'blue' | 'white') => {
+  // Handler for completing a match & awarding points to winning class and grade
+  const handleFinishMatch = (matchId: string, winner: 'teamA' | 'teamB') => {
     const targetMatch = matches.find((m) => m.id === matchId);
     if (!targetMatch) return;
 
     const points = targetMatch.pointsForWinner || 100;
-    const winningTeam = winner === 'blue' ? targetMatch.teamA : targetMatch.teamB;
+    const winningTeam = winner === 'teamA' ? targetMatch.teamA : targetMatch.teamB;
 
     // 1. Update Match status
     setMatches((prev) =>
@@ -66,7 +62,7 @@ export default function SportsDayPage() {
         return {
           ...m,
           status: 'completed',
-          winner,
+          winnerTeam: winner,
         };
       })
     );
@@ -77,8 +73,7 @@ export default function SportsDayPage() {
         if (gs.grade !== winningTeam.grade) return gs;
         return {
           ...gs,
-          blueScore: winner === 'blue' ? gs.blueScore + points : gs.blueScore,
-          whiteScore: winner === 'white' ? gs.whiteScore + points : gs.whiteScore,
+          totalScore: gs.totalScore + points,
           goldMedals: gs.goldMedals + 1,
         };
       })
@@ -97,22 +92,22 @@ export default function SportsDayPage() {
         return cr;
       });
 
-      // Re-sort and recalculate rank
+      // Re-sort and recalculate rank 1 to 18
       updated.sort((a, b) => b.score - a.score);
       return updated.map((cr, idx) => ({ ...cr, rank: idx + 1 }));
     });
 
     // 4. Also register to Supabase rankings
-    const nickname = `${winningTeam.grade}학년 ${winningTeam.classNum}반 (${winner === 'blue' ? '청군' : '백군'})`;
+    const nickname = `${winningTeam.grade}학년 ${winningTeam.classNum}반`;
     addRankingScore(nickname, points).catch(() => {});
   };
 
   return (
     <main className="min-h-screen pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-4 relative">
       {/* Background ambient lighting */}
-      <div className="fixed top-0 left-1/4 w-96 h-96 bg-blue-500/10 dark:bg-blue-600/15 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="fixed top-0 left-1/4 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-600/15 rounded-full blur-3xl pointer-events-none -z-10" />
       <div className="fixed bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 dark:bg-purple-600/15 rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="fixed top-2/3 left-1/3 w-80 h-80 bg-rose-500/10 dark:bg-rose-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="fixed top-2/3 left-1/3 w-80 h-80 bg-emerald-500/10 dark:bg-emerald-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
 
       {/* Top Notification Announcement */}
       <div className="mb-4 glass-card px-4 py-2.5 flex items-center justify-between text-xs text-slate-700 dark:text-slate-300">
@@ -120,7 +115,7 @@ export default function SportsDayPage() {
           <Bell className="w-4 h-4 text-amber-500 animate-pulse" />
           <span className="font-bold text-amber-600 dark:text-amber-400">[실시간 공지]</span>
           <span className="truncate">
-            잠시 후 15:30부터 학년 대항 줄다리기 4강전이 중앙 운동장에서 진행됩니다!
+            총 18개 반 열전! 잠시 후 15:30부터 학급 대항 줄다리기 4강전이 중앙 운동장에서 진행됩니다!
           </span>
         </div>
         <button
@@ -136,14 +131,12 @@ export default function SportsDayPage() {
       <Header
         darkMode={darkMode}
         setDarkMode={setDarkMode}
-        totalBlue={totalBlue}
-        totalWhite={totalWhite}
+        topClass={classRankings[0]}
       />
 
-      {/* Hero Section: Total Points & Tug of War Gauge */}
+      {/* Hero Section: Real-time 18 Classes Overall Rankings & Grade Summary */}
       <ScoreHero
-        totalBlue={totalBlue}
-        totalWhite={totalWhite}
+        classRankings={classRankings}
         gradeScores={gradeScores}
       />
 
@@ -158,7 +151,7 @@ export default function SportsDayPage() {
           />
         </div>
 
-        {/* Bento Card 2: Grade and Class Rankings (4 cols) */}
+        {/* Bento Card 2: 18 Classes Rankings Leaderboard (4 cols) */}
         <div className="lg:col-span-4">
           <GradeRankingsBento
             gradeScores={gradeScores}
@@ -191,7 +184,7 @@ export default function SportsDayPage() {
               무선중학교 체육대회 운영본부
             </div>
             <div className="text-[11px] text-slate-400">
-              Vercel Seoul Region (icn1) • Supabase Seoul Region (ap-northeast-2)
+              1학년(5팀) • 2학년(7팀) • 3학년(6팀) 총 18팀 리그 • Vercel icn1 & Supabase ap-northeast-2
             </div>
           </div>
         </div>

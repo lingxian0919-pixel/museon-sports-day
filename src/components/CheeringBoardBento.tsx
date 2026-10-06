@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { MessageSquare, Heart, Send, Sparkles, User, Clock } from 'lucide-react';
+import { MessageSquare, Heart, Send, User, Clock } from 'lucide-react';
 import { Post } from '../lib/types';
 import { getPosts, createPost, likePost, isSupabaseConfigured } from '../lib/supabase';
 
@@ -52,7 +52,6 @@ export default function CheeringBoardBento() {
   const handleLike = async (postId: string) => {
     if (likedIds.has(postId)) return;
 
-    // Optimistic UI update
     setPosts(prev =>
       prev.map(p => (p.id === postId ? { ...p, likes: p.likes + 1 } : p))
     );
@@ -84,15 +83,15 @@ export default function CheeringBoardBento() {
           </span>
           <div>
             <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              실시간 응원 및 한마디 게시판
+              실시간 학급 응원 게시판
               {isSupabaseConfigured && (
                 <span className="text-[10px] bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold px-2 py-0.5 rounded-full">
-                  DB 연동됨
+                  DB 연동
                 </span>
               )}
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              우리 반과 선후배들을 향한 응원의 메시지를 남겨보세요!
+              18개 학급 친구들과 선후배를 향한 응원의 메시지를 남겨보세요!
             </p>
           </div>
         </div>
@@ -106,14 +105,14 @@ export default function CheeringBoardBento() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <input
             type="text"
-            placeholder="작성자 (예: 2-1 응원대장)"
+            placeholder="작성자 (예: 2-3 응원단)"
             value={author}
             onChange={(e) => setAuthor(e.target.value)}
             className="glass-input px-3 py-2 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
           <input
             type="text"
-            placeholder="제목 (예: 3반 축구 우승 가자!)"
+            placeholder="제목 (예: 3학년 1반 결승 파이팅!)"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
@@ -122,7 +121,7 @@ export default function CheeringBoardBento() {
         </div>
         <div className="flex gap-2">
           <textarea
-            placeholder="따뜻하고 신나는 응원 메시지를 남겨주세요!"
+            placeholder="따뜻하고 활기찬 응원 메시지를 남겨주세요!"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             required
@@ -175,7 +174,7 @@ export default function CheeringBoardBento() {
                 </p>
 
                 <div className="flex items-center justify-between pt-1 text-[11px]">
-                  <span className="text-[10px] text-slate-400">#무선중 #체육대회 #실시간응원</span>
+                  <span className="text-[10px] text-slate-400">#무선중 #18개학급 #실시간응원</span>
                   <button
                     onClick={() => handleLike(post.id)}
                     className={`flex items-center gap-1 px-2.5 py-1 rounded-full transition-all ${

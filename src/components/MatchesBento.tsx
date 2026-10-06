@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Trophy, Clock, MapPin, Plus, CheckCircle2, Award, Flame, Play, Filter } from 'lucide-react';
+import { Trophy, Clock, MapPin, Plus, CheckCircle2, Award, Swords, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Match, SportCategory } from '../lib/types';
 import { SPORT_CATEGORIES } from '../lib/mockData';
@@ -9,7 +9,7 @@ import { SPORT_CATEGORIES } from '../lib/mockData';
 interface MatchesBentoProps {
   matches: Match[];
   onScoreUpdate: (matchId: string, team: 'A' | 'B', delta: number) => void;
-  onFinishMatch: (matchId: string, winner: 'blue' | 'white') => void;
+  onFinishMatch: (matchId: string, winner: 'teamA' | 'teamB') => void;
 }
 
 export default function MatchesBento({ matches, onScoreUpdate, onFinishMatch }: MatchesBentoProps) {
@@ -22,18 +22,30 @@ export default function MatchesBento({ matches, onScoreUpdate, onFinishMatch }: 
     return sportMatch && statusMatch;
   });
 
-  const handleFinish = (match: Match, winner: 'blue' | 'white') => {
+  const handleFinish = (match: Match, winner: 'teamA' | 'teamB') => {
     confetti({
-      particleCount: 100,
-      spread: 70,
+      particleCount: 120,
+      spread: 75,
       origin: { y: 0.6 },
-      colors: winner === 'blue' ? ['#3b82f6', '#60a5fa', '#93c5fd'] : ['#f43f5e', '#fb7185', '#fda4af'],
+      colors: ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'],
     });
     onFinishMatch(match.id, winner);
   };
 
   const getSportName = (sportId: string) => {
     return SPORT_CATEGORIES.find((s) => s.id === sportId)?.name || sportId;
+  };
+
+  const getGradeBadge = (grade: number) => {
+    switch (grade) {
+      case 1:
+        return 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
+      case 2:
+        return 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/20';
+      case 3:
+      default:
+        return 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/20';
+    }
   };
 
   return (
@@ -46,11 +58,11 @@ export default function MatchesBento({ matches, onScoreUpdate, onFinishMatch }: 
               <Trophy className="w-5 h-5" />
             </span>
             <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-              실시간 대진표 및 경기 진행 상황
+              실시간 18팀 종목별 대진표 & 경기 현황
             </h2>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            각 종목별 실시간 스코어 및 토너먼트 진행 현황을 공유합니다.
+            1학년(1~5반), 2학년(1~7반), 3학년(1~6반) 총 18개 팀의 실시간 경기 현황입니다.
           </p>
         </div>
 
@@ -116,8 +128,8 @@ export default function MatchesBento({ matches, onScoreUpdate, onFinishMatch }: 
           </div>
         ) : (
           filteredMatches.map((match) => {
-            const isBlueWinning = match.scoreA > match.scoreB;
-            const isWhiteWinning = match.scoreB > match.scoreA;
+            const isAWinning = match.scoreA > match.scoreB;
+            const isBWinning = match.scoreB > match.scoreA;
 
             return (
               <div
@@ -163,17 +175,16 @@ export default function MatchesBento({ matches, onScoreUpdate, onFinishMatch }: 
                 </div>
 
                 {/* Match Teams & Scoreboard */}
-                <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-slate-100/60 dark:bg-slate-800/40 my-2">
-                  {/* Team A (Blue) */}
+                <div className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-slate-100/60 dark:bg-slate-800/40 my-2">
+                  {/* Team A */}
                   <div className="flex-1 flex flex-col items-start">
                     <div className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-                      <span className="font-bold text-sm text-slate-800 dark:text-slate-100 truncate max-w-[110px]">
+                      <span className="font-black text-sm text-slate-900 dark:text-slate-100">
                         {match.teamA.name}
                       </span>
                     </div>
-                    <span className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold ml-4">
-                      {match.teamA.grade}학년 청군
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded border font-semibold mt-1 ${getGradeBadge(match.teamA.grade)}`}>
+                      {match.teamA.grade}학년 {match.teamA.classNum}반
                     </span>
                   </div>
 
@@ -181,8 +192,8 @@ export default function MatchesBento({ matches, onScoreUpdate, onFinishMatch }: 
                   <div className="flex items-center gap-2 px-3">
                     <span
                       className={`text-2xl font-black ${
-                        isBlueWinning
-                          ? 'text-blue-600 dark:text-blue-400 font-black'
+                        isAWinning
+                          ? 'text-indigo-600 dark:text-indigo-400 font-black'
                           : 'text-slate-600 dark:text-slate-400'
                       }`}
                     >
@@ -191,8 +202,8 @@ export default function MatchesBento({ matches, onScoreUpdate, onFinishMatch }: 
                     <span className="text-slate-400 font-bold">:</span>
                     <span
                       className={`text-2xl font-black ${
-                        isWhiteWinning
-                          ? 'text-rose-600 dark:text-rose-400 font-black'
+                        isBWinning
+                          ? 'text-indigo-600 dark:text-indigo-400 font-black'
                           : 'text-slate-600 dark:text-slate-400'
                       }`}
                     >
@@ -200,16 +211,15 @@ export default function MatchesBento({ matches, onScoreUpdate, onFinishMatch }: 
                     </span>
                   </div>
 
-                  {/* Team B (White) */}
+                  {/* Team B */}
                   <div className="flex-1 flex flex-col items-end">
                     <div className="flex items-center gap-1.5">
-                      <span className="font-bold text-sm text-slate-800 dark:text-slate-100 truncate max-w-[110px] text-right">
+                      <span className="font-black text-sm text-slate-900 dark:text-slate-100 text-right">
                         {match.teamB.name}
                       </span>
-                      <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
                     </div>
-                    <span className="text-[11px] text-rose-600 dark:text-rose-400 font-semibold mr-4">
-                      {match.teamB.grade}학년 백군
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded border font-semibold mt-1 ${getGradeBadge(match.teamB.grade)}`}>
+                      {match.teamB.grade}학년 {match.teamB.classNum}반
                     </span>
                   </div>
                 </div>
@@ -224,7 +234,7 @@ export default function MatchesBento({ matches, onScoreUpdate, onFinishMatch }: 
                   </span>
                 </div>
 
-                {/* Teacher / Admin Controls (점수 득점 & 우승 판정) */}
+                {/* Teacher / Admin Controls (실시간 득점 & 우승 판정) */}
                 {match.status === 'in_progress' && (
                   <div className="mt-3 pt-3 border-t border-slate-200/50 dark:border-slate-700/50 flex flex-col gap-2">
                     <div className="flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-300">
@@ -234,41 +244,41 @@ export default function MatchesBento({ matches, onScoreUpdate, onFinishMatch }: 
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         onClick={() => onScoreUpdate(match.id, 'A', 1)}
-                        className="py-1.5 px-3 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-bold text-xs flex items-center justify-center gap-1 transition-colors"
+                        className="py-1.5 px-2 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center gap-1 transition-colors truncate"
                       >
-                        <Plus className="w-3.5 h-3.5" /> 청군 +1점
+                        <Plus className="w-3.5 h-3.5 shrink-0" /> {match.teamA.name} +1점
                       </button>
                       <button
                         onClick={() => onScoreUpdate(match.id, 'B', 1)}
-                        className="py-1.5 px-3 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs flex items-center justify-center gap-1 transition-colors"
+                        className="py-1.5 px-2 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center gap-1 transition-colors truncate"
                       >
-                        <Plus className="w-3.5 h-3.5" /> 백군 +1점
+                        <Plus className="w-3.5 h-3.5 shrink-0" /> {match.teamB.name} +1점
                       </button>
                     </div>
 
                     <div className="flex items-center gap-2 mt-1">
                       <button
-                        onClick={() => handleFinish(match, 'blue')}
-                        className="flex-1 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm transition-colors"
+                        onClick={() => handleFinish(match, 'teamA')}
+                        className="flex-1 py-1.5 px-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm transition-colors truncate"
                       >
-                        🏆 청군 우승 확정 (+{match.pointsForWinner}pt)
+                        🏆 {match.teamA.name} 우승 (+{match.pointsForWinner}pt)
                       </button>
                       <button
-                        onClick={() => handleFinish(match, 'white')}
-                        className="flex-1 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-sm transition-colors"
+                        onClick={() => handleFinish(match, 'teamB')}
+                        className="flex-1 py-1.5 px-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm transition-colors truncate"
                       >
-                        🏆 백군 우승 확정 (+{match.pointsForWinner}pt)
+                        🏆 {match.teamB.name} 우승 (+{match.pointsForWinner}pt)
                       </button>
                     </div>
                   </div>
                 )}
 
                 {/* Completed winner announcement */}
-                {match.status === 'completed' && match.winner && (
-                  <div className="mt-3 pt-2 border-t border-slate-200/50 dark:border-slate-700/50 flex items-center justify-center gap-1.5 text-xs font-bold">
-                    <Trophy className="w-3.5 h-3.5 text-amber-500" />
-                    <span className={match.winner === 'blue' ? 'text-blue-600 dark:text-blue-400' : 'text-rose-600 dark:text-rose-400'}>
-                      {match.winner === 'blue' ? match.teamA.name : match.teamB.name} 우승! (+{match.pointsForWinner}pt 획득)
+                {match.status === 'completed' && match.winnerTeam && (
+                  <div className="mt-3 pt-2 border-t border-slate-200/50 dark:border-slate-700/50 flex items-center justify-center gap-1.5 text-xs font-bold text-amber-500">
+                    <Trophy className="w-4 h-4" />
+                    <span>
+                      {match.winnerTeam === 'teamA' ? match.teamA.name : match.teamB.name} 우승! (+{match.pointsForWinner}pt 획득)
                     </span>
                   </div>
                 )}

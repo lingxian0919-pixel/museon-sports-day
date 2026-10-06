@@ -29,10 +29,10 @@ export default function TournamentBracketModal({ isOpen, onClose, matches }: Tou
           </span>
           <div>
             <h2 className="text-xl font-black text-slate-900 dark:text-white">
-              토너먼트 대진표 & 진행 트리
+              18개 학급 토너먼트 대진표 & 진행 트리
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              무선중학교 체육대회 본선 및 결승 토너먼트 로드맵
+              1학년(1~5반), 2학년(1~7반), 3학년(1~6반) 본선 및 결승 토너먼트
             </p>
           </div>
         </div>
@@ -48,11 +48,11 @@ export default function TournamentBracketModal({ isOpen, onClose, matches }: Tou
               <div key={match.id} className="glass-card p-3 space-y-1.5 border-slate-300 dark:border-slate-700">
                 <span className="text-[10px] font-bold text-slate-400">{match.court}</span>
                 <div className="flex justify-between text-xs font-semibold">
-                  <span className="text-blue-600 dark:text-blue-400">{match.teamA.name}</span>
+                  <span className="text-indigo-600 dark:text-indigo-400 font-bold">{match.teamA.name}</span>
                   <span>{match.scoreA}</span>
                 </div>
                 <div className="flex justify-between text-xs font-semibold">
-                  <span className="text-rose-600 dark:text-rose-400">{match.teamB.name}</span>
+                  <span className="text-purple-600 dark:text-purple-400 font-bold">{match.teamB.name}</span>
                   <span>{match.scoreB}</span>
                 </div>
               </div>
@@ -71,11 +71,11 @@ export default function TournamentBracketModal({ isOpen, onClose, matches }: Tou
                   <span>+{match.pointsForWinner}pt</span>
                 </div>
                 <div className="flex justify-between text-sm font-black">
-                  <span className="text-blue-600 dark:text-blue-400">{match.teamA.name}</span>
+                  <span className="text-indigo-600 dark:text-indigo-400">{match.teamA.name}</span>
                   <span className="text-lg">{match.scoreA}</span>
                 </div>
                 <div className="flex justify-between text-sm font-black">
-                  <span className="text-rose-600 dark:text-rose-400">{match.teamB.name}</span>
+                  <span className="text-purple-600 dark:text-purple-400">{match.teamB.name}</span>
                   <span className="text-lg">{match.scoreB}</span>
                 </div>
               </div>
@@ -88,10 +88,10 @@ export default function TournamentBracketModal({ isOpen, onClose, matches }: Tou
               <Trophy className="w-8 h-8" />
             </div>
             <h4 className="font-black text-slate-900 dark:text-white text-base">
-              종합 우승 트로피
+              종합 우승 학급 트로피
             </h4>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              모든 종목의 득점 포인트를 합산하여 최종 종합 우승 학년 및 팀을 결정합니다.
+              총 18개 반 중 가장 높은 누적 포인트를 획득한 학급이 2026 체육대회 종합 우승을 차지합니다!
             </p>
           </div>
         </div>

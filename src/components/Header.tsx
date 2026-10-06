@@ -1,16 +1,16 @@
 'use client';
 
 import React from 'react';
-import { Sun, Moon, Flame, Trophy, Radio } from 'lucide-react';
+import { Sun, Moon, Flame, Trophy, Radio, Users } from 'lucide-react';
+import { ClassRanking } from '../lib/types';
 
 interface HeaderProps {
   darkMode: boolean;
   setDarkMode: (val: boolean) => void;
-  totalBlue: number;
-  totalWhite: number;
+  topClass?: ClassRanking;
 }
 
-export default function Header({ darkMode, setDarkMode, totalBlue, totalWhite }: HeaderProps) {
+export default function Header({ darkMode, setDarkMode, topClass }: HeaderProps) {
   return (
     <header className="sticky top-4 z-40 mb-6">
       <div className="glass-panel px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -26,7 +26,7 @@ export default function Header({ darkMode, setDarkMode, totalBlue, totalWhite }:
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
               </span>
               <span className="text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                <Radio className="w-3 h-3" /> LIVE 경기 진행중
+                <Radio className="w-3 h-3" /> LIVE 18개 학급 본선 리그
               </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-black tracking-tight bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-800 dark:from-white dark:via-indigo-200 dark:to-slate-300 bg-clip-text text-transparent">
@@ -35,17 +35,26 @@ export default function Header({ darkMode, setDarkMode, totalBlue, totalWhite }:
           </div>
         </div>
 
-        {/* Center: Live Match Summary Pill */}
-        <div className="hidden md:flex items-center gap-4 bg-slate-200/50 dark:bg-slate-800/60 backdrop-blur-sm px-4 py-2 rounded-full border border-slate-300/40 dark:border-slate-700/50 text-sm">
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-blue-500 ring-2 ring-blue-300 dark:ring-blue-700"></span>
-            <span className="font-bold text-blue-600 dark:text-blue-400">청군 {totalBlue}점</span>
+        {/* Center: Live 18 Classes & Current Leader Summary */}
+        <div className="hidden md:flex items-center gap-3 bg-slate-200/50 dark:bg-slate-800/60 backdrop-blur-sm px-4 py-2 rounded-full border border-slate-300/40 dark:border-slate-700/50 text-xs">
+          <div className="flex items-center gap-1.5 font-medium text-slate-600 dark:text-slate-300">
+            <Users className="w-3.5 h-3.5 text-indigo-500" />
+            <span>총 18개 학급 (1학년 5팀 • 2학년 7팀 • 3학년 6팀)</span>
           </div>
-          <span className="text-slate-400 font-bold">VS</span>
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-rose-600 dark:text-rose-400">백군 {totalWhite}점</span>
-            <span className="w-3 h-3 rounded-full bg-rose-500 ring-2 ring-rose-300 dark:ring-rose-700"></span>
-          </div>
+          {topClass && (
+            <>
+              <span className="text-slate-300 dark:text-slate-600">|</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-amber-500 font-black">🥇 1위</span>
+                <span className="font-bold text-slate-800 dark:text-slate-100">
+                  {topClass.grade}학년 {topClass.classNum}반
+                </span>
+                <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">
+                  ({topClass.score}pt)
+                </span>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Right: Quick actions & Dark mode toggle */}
