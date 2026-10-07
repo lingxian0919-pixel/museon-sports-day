@@ -6,12 +6,14 @@ import ScoreHero from '../components/ScoreHero';
 import MatchesBento from '../components/MatchesBento';
 import CheeringBoardBento from '../components/CheeringBoardBento';
 import TournamentBracketModal from '../components/TournamentBracketModal';
+import ScoreRulesModal from '../components/ScoreRulesModal';
 import { useSportsData } from '../lib/useSportsData';
-import { Swords, Eye } from 'lucide-react';
+import { Swords, Eye, Award } from 'lucide-react';
 
 export default function StudentViewerPage() {
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [isBracketOpen, setIsBracketOpen] = useState<boolean>(false);
+  const [isScoreRulesOpen, setIsScoreRulesOpen] = useState<boolean>(false);
   const { matches, gradeScores, classRankings, sportRankings } = useSportsData();
 
   // Initialize theme from system or default dark
@@ -41,6 +43,13 @@ export default function StudentViewerPage() {
           </span>
         </div>
         <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
+          <button
+            onClick={() => setIsScoreRulesOpen(true)}
+            className="flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400 hover:underline"
+          >
+            <Award className="w-3.5 h-3.5 text-amber-500" />
+            <span>종목별 배점표</span>
+          </button>
           <button
             onClick={() => setIsBracketOpen(true)}
             className="flex items-center gap-1 font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
@@ -111,6 +120,12 @@ export default function StudentViewerPage() {
         isOpen={isBracketOpen}
         onClose={() => setIsBracketOpen(false)}
         matches={matches}
+      />
+
+      {/* Official Score Rules Modal */}
+      <ScoreRulesModal
+        isOpen={isScoreRulesOpen}
+        onClose={() => setIsScoreRulesOpen(false)}
       />
     </main>
   );

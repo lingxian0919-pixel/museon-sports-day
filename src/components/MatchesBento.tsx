@@ -21,7 +21,13 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Match, MatchStatus, SportRankingEntry } from '../lib/types';
-import { SPORT_CATEGORIES, isTournamentSport, calculateRankPoints } from '../lib/mockData';
+import {
+  SPORT_CATEGORIES,
+  isTournamentSport,
+  calculateRankPoints,
+  getRankPoints,
+} from '../lib/mockData';
+import ScoreRulesModal from './ScoreRulesModal';
 
 interface MatchesBentoProps {
   matches: Match[];
@@ -50,6 +56,8 @@ export default function MatchesBento({
   const [selectedGrade, setSelectedGrade] = useState<number>(1);
   // 보기 모드: 트리 뷰 vs 목록 뷰
   const [viewMode, setViewMode] = useState<'bracket' | 'list'>('bracket');
+  // 종목별 공식 배점표 모달 열림 상태
+  const [isScoreRulesOpen, setIsScoreRulesOpen] = useState<boolean>(false);
 
   const handleFinish = (match: Match, winner: 'teamA' | 'teamB') => {
     confetti({
@@ -124,38 +132,52 @@ export default function MatchesBento({
           </p>
         </div>
 
-        {/* View Mode Toggle (토너먼트 종목일 때만 대진 트리 / 목록 전환) */}
-        {isTournamentSport(selectedSport) ? (
-          <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-slate-800/80 p-1 rounded-xl text-xs font-semibold self-start md:self-auto shrink-0">
-            <button
-              type="button"
-              onClick={() => setViewMode('bracket')}
-              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all ${
-                viewMode === 'bracket'
-                  ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <GitBranch className="w-3.5 h-3.5" /> 대진표 트리
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('list')}
-              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all ${
-                viewMode === 'list'
-                  ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <ListOrdered className="w-3.5 h-3.5" /> 경기 목록
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold self-start md:self-auto shrink-0 border border-amber-500/20">
-            <Medal className="w-3.5 h-3.5" />
-            <span>학년별 순위 및 기록표</span>
-          </div>
-        )}
+        {/* Actions & View Mode Toggle */}
+        <div className="flex items-center gap-2 self-start md:self-auto shrink-0 flex-wrap">
+          {/* 종목별 공식 배점표 모달 버튼 */}
+          <button
+            type="button"
+            onClick={() => setIsScoreRulesOpen(true)}
+            className="px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-400 text-xs font-black transition-all flex items-center gap-1.5 border border-amber-500/30 shadow-xs"
+            title="11개 종목별 1등~7등 공식 배점표 보기"
+          >
+            <Award className="w-3.5 h-3.5 text-amber-500" />
+            <span>종목별 공식 배점표</span>
+          </button>
+
+          {/* View Mode Toggle (토너먼트 종목일 때만 대진 트리 / 목록 전환) */}
+          {isTournamentSport(selectedSport) ? (
+            <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-slate-800/80 p-1 rounded-xl text-xs font-semibold shrink-0">
+              <button
+                type="button"
+                onClick={() => setViewMode('bracket')}
+                className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all ${
+                  viewMode === 'bracket'
+                    ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <GitBranch className="w-3.5 h-3.5" /> 대진표 트리
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all ${
+                  viewMode === 'list'
+                    ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <ListOrdered className="w-3.5 h-3.5" /> 경기 목록
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold shrink-0 border border-amber-500/20">
+              <Medal className="w-3.5 h-3.5" />
+              <span>학년별 순위 및 기록표</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 2. 11개 종목 선택 탭 (토너먼트 vs 순위제 뱃지) */}
@@ -294,6 +316,12 @@ export default function MatchesBento({
           onUpdateSportRanking={onUpdateSportRanking}
         />
       )}
+
+      {/* 5. 종목별 공식 배점표 모달 */}
+      <ScoreRulesModal
+        isOpen={isScoreRulesOpen}
+        onClose={() => setIsScoreRulesOpen(false)}
+      />
     </div>
   );
 }
@@ -1192,35 +1220,35 @@ function SportRankingSection({
               </h3>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              {sport?.description} • 1위 최대 +{totalPoints}pt 부여 (1위: 100%, 2위: 70%, 3위: 50%, 4위: 30%, 5위: 20%, 6위: 10%, 7위: 5%)
+              {sport?.description} • 공식 배점 기준 자동 계산
             </p>
           </div>
 
           {/* 배점 기준 뱃지 목록 */}
           <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
             <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-600 dark:text-amber-300 font-black border border-amber-500/30">
-              🥇 1위 {calculateRankPoints(totalPoints, 1)}pt
+              🥇 1위 {getRankPoints(sportId, 1)}pt
             </span>
             <span className="px-2 py-0.5 rounded-md bg-slate-200/80 dark:bg-slate-700/80 text-slate-700 dark:text-slate-300 font-bold">
-              🥈 2위 {calculateRankPoints(totalPoints, 2)}pt
+              🥈 2위 {getRankPoints(sportId, 2)}pt
             </span>
             <span className="px-2 py-0.5 rounded-md bg-orange-500/15 text-orange-600 dark:text-orange-400 font-bold">
-              🥉 3위 {calculateRankPoints(totalPoints, 3)}pt
+              🥉 3위 {getRankPoints(sportId, 3)}pt
             </span>
             <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">
-              4위 {calculateRankPoints(totalPoints, 4)}pt
+              4위 {getRankPoints(sportId, 4)}pt
             </span>
             <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">
-              5위 {calculateRankPoints(totalPoints, 5)}pt
+              5위 {getRankPoints(sportId, 5)}pt
             </span>
             {classCount >= 6 && (
               <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">
-                6위 {calculateRankPoints(totalPoints, 6)}pt
+                6위 {getRankPoints(sportId, 6)}pt
               </span>
             )}
             {classCount >= 7 && (
               <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">
-                7위 {calculateRankPoints(totalPoints, 7)}pt
+                7위 {getRankPoints(sportId, 7)}pt
               </span>
             )}
           </div>
@@ -1313,7 +1341,7 @@ function SportRankingSection({
                         <option value={0}>순위 미지정 (0pt)</option>
                         {Array.from({ length: classCount }, (_, i) => i + 1).map((r) => (
                           <option key={r} value={r}>
-                            {r === 1 ? '🥇 1위' : r === 2 ? '🥈 2위' : r === 3 ? '🥉 3위' : `${r}위`} (+{calculateRankPoints(totalPoints, r)}pt)
+                            {r === 1 ? '🥇 1위' : r === 2 ? '🥈 2위' : r === 3 ? '🥉 3위' : `${r}위`} (+{getRankPoints(sportId, r)}pt)
                           </option>
                         ))}
                       </select>

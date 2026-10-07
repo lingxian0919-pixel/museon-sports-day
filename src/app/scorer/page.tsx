@@ -6,12 +6,14 @@ import ScoreHero from '../../components/ScoreHero';
 import MatchesBento from '../../components/MatchesBento';
 import CheeringBoardBento from '../../components/CheeringBoardBento';
 import TournamentBracketModal from '../../components/TournamentBracketModal';
+import ScoreRulesModal from '../../components/ScoreRulesModal';
 import { useSportsData } from '../../lib/useSportsData';
-import { Swords, RotateCcw, ShieldAlert } from 'lucide-react';
+import { Swords, RotateCcw, ShieldAlert, Award } from 'lucide-react';
 
 export default function ScorerAdminPage() {
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [isBracketOpen, setIsBracketOpen] = useState<boolean>(false);
+  const [isScoreRulesOpen, setIsScoreRulesOpen] = useState<boolean>(false);
 
   const {
     matches,
@@ -54,6 +56,13 @@ export default function ScorerAdminPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <button
+            onClick={() => setIsScoreRulesOpen(true)}
+            className="px-2.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-200 font-bold flex items-center gap-1 transition-colors border border-amber-500/30"
+          >
+            <Award className="w-3.5 h-3.5 text-amber-500" />
+            <span>종목별 공식 배점표</span>
+          </button>
           <button
             onClick={handleResetData}
             title="초기 데이터로 리셋"
@@ -130,6 +139,12 @@ export default function ScorerAdminPage() {
         isOpen={isBracketOpen}
         onClose={() => setIsBracketOpen(false)}
         matches={matches}
+      />
+
+      {/* Official Score Rules Modal */}
+      <ScoreRulesModal
+        isOpen={isScoreRulesOpen}
+        onClose={() => setIsScoreRulesOpen(false)}
       />
     </main>
   );

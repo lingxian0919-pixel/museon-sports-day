@@ -16,17 +16,17 @@ export const RANKING_SPORT_IDS = [
 ];
 
 export const SPORT_CATEGORIES: SportCategory[] = [
-  { id: 'three_legged', name: '2인 3각', iconName: 'Users', category: '순위/기록', totalPoints: 100, description: '호흡을 맞춰 달리는 50m 반환점 2인 3각 릴레이 (순위제)' },
-  { id: 'soccer', name: '축구', iconName: 'Trophy', category: '토너먼트 (남)', totalPoints: 150, description: '전/후반 각 20분 정규 축구 토너먼트' },
-  { id: 'dodgeball', name: '피구', iconName: 'Flame', category: '토너먼트 (혼성)', totalPoints: 100, description: '남녀 혼성 15인 피구 토너먼트' },
-  { id: 'futsal', name: '풋살', iconName: 'Activity', category: '토너먼트 (여)', totalPoints: 120, description: '5인제 빠른 공수전환 실내 풋살 토너먼트' },
-  { id: 'jump_rope', name: '단체 줄넘기', iconName: 'Repeat', category: '순위/기록', totalPoints: 120, description: '10인 이상 단체 연속 줄넘기 기록 대결 (순위제)' },
-  { id: 'tug_of_war', name: '줄다리기', iconName: 'Users', category: '토너먼트 (혼성)', totalPoints: 150, description: '30인 단체 파워 토너먼트' },
-  { id: 'relay', name: '이어달리기', iconName: 'Zap', category: '순위/기록', totalPoints: 200, description: '4x100m 학급 대표 계주 결승전 (순위제)' },
-  { id: 'ox_quiz', name: 'OX퀴즈', iconName: 'HelpCircle', category: '순위/기록', totalPoints: 80, description: '전교생 상식 및 학교 역사 퀴즈 서바이벌 (순위제)' },
-  { id: 'bottle_flip', name: '물병던지기', iconName: 'Target', category: '순위/기록', totalPoints: 80, description: '학급 대표 물병 세우기 릴레이 챌린지 (순위제)' },
-  { id: 'jegichagi', name: '제기차기', iconName: 'Sparkles', category: '순위/기록', totalPoints: 80, description: '학급 대표 제기차기 연속 횟수 합산전 (순위제)' },
-  { id: 'disc_golf', name: '디스크 골프', iconName: 'Disc', category: '순위/기록', totalPoints: 100, description: '타깃 바스켓 플라잉디스크 퍼팅 매치 (순위제)' },
+  { id: 'three_legged', name: '2인 3각', iconName: 'Users', category: '순위/기록', totalPoints: 160, description: '1등 160pt, 2등 140pt, 3등 120pt, 4등 100pt, 5~7등 80pt' },
+  { id: 'soccer', name: '축구', iconName: 'Trophy', category: '토너먼트 (남)', totalPoints: 150, description: '1등 150pt, 2등 130pt, 3등 110pt, 4등 90pt, 5~7등 70pt' },
+  { id: 'dodgeball', name: '피구', iconName: 'Flame', category: '토너먼트 (혼성)', totalPoints: 180, description: '1등 180pt, 2등 160pt, 3등 140pt, 4등 120pt, 5~7등 70pt' },
+  { id: 'futsal', name: '풋살', iconName: 'Activity', category: '토너먼트 (여)', totalPoints: 150, description: '1등 150pt, 2등 130pt, 3등 110pt, 4등 90pt, 5~7등 70pt' },
+  { id: 'jump_rope', name: '단체줄넘기(8자마라톤)', iconName: 'Repeat', category: '순위/기록', totalPoints: 160, description: '1등 160pt, 2등 140pt, 3등 120pt, 4등 100pt, 5~7등 80pt' },
+  { id: 'tug_of_war', name: '줄다리기', iconName: 'Users', category: '토너먼트 (혼성)', totalPoints: 200, description: '1등 200pt, 2등 180pt, 3등 160pt, 4등 140pt, 5~7등 120pt' },
+  { id: 'relay', name: '이어달리기', iconName: 'Zap', category: '순위/기록', totalPoints: 150, description: '1등 150pt, 2등 130pt, 3등 110pt, 4등 90pt, 5~7등 70pt' },
+  { id: 'ox_quiz', name: 'O.X 퀴즈', iconName: 'HelpCircle', category: '순위/기록', totalPoints: 50, description: '1등 50pt, 2등 40pt, 3등 30pt (4~7등 0pt)' },
+  { id: 'bottle_flip', name: '물병던지기', iconName: 'Target', category: '순위/기록', totalPoints: 50, description: '1등 50pt, 2등 40pt, 3등 30pt (4~7등 0pt)' },
+  { id: 'jegichagi', name: '제기차기', iconName: 'Sparkles', category: '순위/기록', totalPoints: 50, description: '1등 50pt, 2등 40pt, 3등 30pt (4~7등 0pt)' },
+  { id: 'disc_golf', name: '디스크 골프', iconName: 'Disc', category: '순위/기록', totalPoints: 50, description: '1등 50pt, 2등 40pt, 3등 30pt (4~7등 0pt)' },
 ];
 
 
@@ -697,17 +697,45 @@ export const INITIAL_MATCHES: Match[] = [
   ...generateGrade3Matches(),
 ];
 
-// 순위별 획득 포인트 계산 함수
-export function calculateRankPoints(totalPoints: number, rank: number): number {
+// 종목별 공식 배점표 (1등 ~ 7등) - 사용자 업로드 기준표 정확 반영
+export const SPORT_RANK_POINTS_TABLE: Record<string, number[]> = {
+  // [1등, 2등, 3등, 4등, 5등, 6등, 7등]
+  three_legged: [160, 140, 120, 100, 80, 80, 80],
+  soccer: [150, 130, 110, 90, 70, 70, 70],
+  dodgeball: [180, 160, 140, 120, 70, 70, 70],
+  futsal: [150, 130, 110, 90, 70, 70, 70],
+  jump_rope: [160, 140, 120, 100, 80, 80, 80],
+  tug_of_war: [200, 180, 160, 140, 120, 120, 120],
+  relay: [150, 130, 110, 90, 70, 70, 70],
+  ox_quiz: [50, 40, 30, 0, 0, 0, 0],
+  bottle_flip: [50, 40, 30, 0, 0, 0, 0],
+  jegichagi: [50, 40, 30, 0, 0, 0, 0],
+  disc_golf: [50, 40, 30, 0, 0, 0, 0],
+};
+
+// 종목 및 순위(1~7)에 따른 공식 배점 반환 함수
+export function getRankPoints(sportId: string, rank: number): number {
   if (rank <= 0) return 0;
-  if (rank === 1) return totalPoints;
-  if (rank === 2) return Math.round(totalPoints * 0.7);
-  if (rank === 3) return Math.round(totalPoints * 0.5);
-  if (rank === 4) return Math.round(totalPoints * 0.3);
-  if (rank === 5) return Math.round(totalPoints * 0.2);
-  if (rank === 6) return Math.round(totalPoints * 0.1);
-  if (rank === 7) return Math.round(totalPoints * 0.05);
-  return 0;
+  const table = SPORT_RANK_POINTS_TABLE[sportId];
+  if (!table) return 0;
+  const idx = rank - 1;
+  if (idx < table.length) {
+    return table[idx];
+  }
+  return table[table.length - 1]; // 7위 이상은 7위 점수 적용
+}
+
+// 기존 인터페이스 호환용 계산 함수
+export function calculateRankPoints(sportIdOrPoints: string | number, rank: number): number {
+  if (typeof sportIdOrPoints === 'string') {
+    return getRankPoints(sportIdOrPoints, rank);
+  }
+  if (rank <= 0) return 0;
+  if (sportIdOrPoints === 160) return [160, 140, 120, 100, 80, 80, 80][rank - 1] ?? 80;
+  if (sportIdOrPoints === 180) return [180, 160, 140, 120, 70, 70, 70][rank - 1] ?? 70;
+  if (sportIdOrPoints === 200) return [200, 180, 160, 140, 120, 120, 120][rank - 1] ?? 120;
+  if (sportIdOrPoints === 50) return [50, 40, 30, 0, 0, 0, 0][rank - 1] ?? 0;
+  return [150, 130, 110, 90, 70, 70, 70][rank - 1] ?? 70;
 }
 
 // 순위형 7개 종목 초기 학급별 순위 및 기록 데이터 생성
@@ -782,7 +810,7 @@ export function generateInitialSportRankings(): SportRankingEntry[] {
         const preset = presets[key];
         const rank = preset ? preset.rank : 0;
         const record = preset ? preset.record : '';
-        const points = calculateRankPoints(totalPts, rank);
+        const points = getRankPoints(sportId, rank);
 
         rankings.push({
           id: `${sportId}-g${grade}-c${c}`,

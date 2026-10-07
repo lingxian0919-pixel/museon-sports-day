@@ -8,14 +8,15 @@ import {
   INITIAL_CLASS_RANKINGS,
   INITIAL_SPORT_RANKINGS,
   calculateRankPoints,
+  getRankPoints,
   SPORT_CATEGORIES,
 } from './mockData';
 import { addRankingScore } from './supabase';
 
-const STORAGE_KEY_MATCHES = 'museon_sports_matches_v7';
-const STORAGE_KEY_GRADES = 'museon_sports_grades_v7';
-const STORAGE_KEY_CLASSES = 'museon_sports_classes_v7';
-const STORAGE_KEY_SPORT_RANKINGS = 'museon_sports_sport_rankings_v7';
+const STORAGE_KEY_MATCHES = 'museon_sports_matches_v8';
+const STORAGE_KEY_GRADES = 'museon_sports_grades_v8';
+const STORAGE_KEY_CLASSES = 'museon_sports_classes_v8';
+const STORAGE_KEY_SPORT_RANKINGS = 'museon_sports_sport_rankings_v8';
 
 export function useSportsData() {
   const [matches, setMatches] = useState<Match[]>(INITIAL_MATCHES);
@@ -245,9 +246,7 @@ export function useSportsData() {
     rank: number,
     record?: string
   ) => {
-    const sport = SPORT_CATEGORIES.find((s) => s.id === sportId);
-    const totalPts = sport?.totalPoints || 100;
-    const newPoints = calculateRankPoints(totalPts, rank);
+    const newPoints = getRankPoints(sportId, rank);
 
     let oldPoints = 0;
     const existing = sportRankings.find(
