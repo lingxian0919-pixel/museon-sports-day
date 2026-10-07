@@ -9,9 +9,9 @@ import {
 } from './mockData';
 import { addRankingScore } from './supabase';
 
-const STORAGE_KEY_MATCHES = 'museon_sports_matches_v4';
-const STORAGE_KEY_GRADES = 'museon_sports_grades_v4';
-const STORAGE_KEY_CLASSES = 'museon_sports_classes_v4';
+const STORAGE_KEY_MATCHES = 'museon_sports_matches_v5';
+const STORAGE_KEY_GRADES = 'museon_sports_grades_v5';
+const STORAGE_KEY_CLASSES = 'museon_sports_classes_v5';
 
 export function useSportsData() {
   const [matches, setMatches] = useState<Match[]>(INITIAL_MATCHES);

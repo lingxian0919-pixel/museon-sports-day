@@ -21,6 +21,7 @@ export interface Match {
   pointsForWinner: number;
   grade?: number; // 1, 2, 3
   matchNumber?: number; // 1, 2, 3, 4 ...
+  matchLetter?: string; // 'a', 'b', 'c', 'd', 'e', 'f'
   bracketLabel?: string; // e.g. '① 예선', '② 4강 1경기', '③ 4강 2경기', '④ 결승전'
   sourceMatchAId?: string; // id of match whose winner feeds into teamA
   sourceMatchBId?: string; // id of match whose winner feeds into teamB
