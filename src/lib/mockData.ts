@@ -449,114 +449,223 @@ function generateGrade2Matches(): Match[] {
   return matches;
 }
 
-// 3학년 6학급 대진표 생성 (8강 2경기 -> 4강 2경기 -> 결승전)
+// 3학년 6학급 대진표 생성 (사용자 제공 도면 media_1791381767024.png 반영)
+// ㉢: 좌측 4강 1경기 (승자가 결승 ㉤ 직행)
+// ㉡: 우측 8강 1경기, ㉠: 우측 8강 2경기 -> ㉣: 우측 4강 2경기 (㉡승자 vs ㉠승자)
+// ㉤: 결승전 (㉢승자 vs ㉣승자)
 function generateGrade3Matches(): Match[] {
+  const customG3Seeds: Record<
+    string,
+    { mcA: number; mcB: number; mbA: number; mbB: number; maA: number; maB: number }
+  > = {
+    // 축구(남): ㉢ 4 vs 2, ㉡ 1 vs 3, ㉠ 6 vs 5
+    soccer: { mcA: 4, mcB: 2, mbA: 1, mbB: 3, maA: 6, maB: 5 },
+    // 풋살(여): ㉢ 6 vs 2, ㉡ 4 vs 3, ㉠ 1 vs 5
+    futsal: { mcA: 6, mcB: 2, mbA: 4, mbB: 3, maA: 1, maB: 5 },
+    // 피구(혼성): ㉢ 4 vs 5, ㉡ 6 vs 2, ㉠ 3 vs 1
+    dodgeball: { mcA: 4, mcB: 5, mbA: 6, mbB: 2, maA: 3, maB: 1 },
+    // 줄다리기(혼성): ㉢ 4 vs 2, ㉡ 3 vs 6, ㉠ 5 vs 1
+    tug_of_war: { mcA: 4, mcB: 2, mbA: 3, mbB: 6, maA: 5, maB: 1 },
+  };
+
+  const defaultG3Seeds = [
+    { mcA: 1, mcB: 6, mbA: 2, mbB: 5, maA: 3, maB: 4 },
+    { mcA: 2, mcB: 5, mbA: 1, mbB: 4, maA: 3, maB: 6 },
+    { mcA: 1, mcB: 2, mbA: 3, mbB: 4, maA: 5, maB: 6 },
+    { mcA: 3, mcB: 5, mbA: 1, mbB: 6, maA: 2, maB: 4 },
+    { mcA: 2, mcB: 6, mbA: 1, mbB: 3, maA: 4, maB: 5 },
+    { mcA: 1, mcB: 5, mbA: 2, mbB: 4, maA: 3, maB: 6 },
+    { mcA: 3, mcB: 6, mbA: 1, mbB: 5, maA: 2, maB: 4 },
+  ];
+
   const matches: Match[] = [];
-  SPORT_CATEGORIES.forEach((sport) => {
+  SPORT_CATEGORIES.forEach((sport, sIdx) => {
+    const seed = customG3Seeds[sport.id] || defaultG3Seeds[sIdx % defaultG3Seeds.length];
     const court = SPORT_COURTS[sport.id] || '체육관';
     const pts = sport.totalPoints;
     const base = `${sport.id}-g3`;
 
-    const m1Id = `${base}-m1`;
-    const m2Id = `${base}-m2`;
-    const m3Id = `${base}-m3`;
-    const m4Id = `${base}-m4`;
-    const m5Id = `${base}-m5`;
+    const mbId = `${base}-mb`;
+    const maId = `${base}-ma`;
+    const mcId = `${base}-mc`;
+    const mdId = `${base}-md`;
+    const meId = `${base}-me`;
 
-    // 8강 1경기 (1반 vs 6반)
+    // 기본 초기 진행 상태 및 점수 설정
+    let mbStatus: Match['status'] = 'scheduled';
+    let mbScoreA = 0, mbScoreB = 0;
+    let mbWinner: Match['winnerTeam'] = undefined;
+
+    let maStatus: Match['status'] = 'scheduled';
+    let maScoreA = 0, maScoreB = 0;
+    let maWinner: Match['winnerTeam'] = undefined;
+
+    let mcStatus: Match['status'] = 'scheduled';
+    let mcScoreA = 0, mcScoreB = 0;
+    let mcWinner: Match['winnerTeam'] = undefined;
+
+    let mdStatus: Match['status'] = 'scheduled';
+    let mdScoreA = 0, mdScoreB = 0;
+    let mdTeamA = { name: '㉡ 8강 1경기 승자', grade: 3, classNum: 0 };
+    let mdTeamB = { name: '㉠ 8강 2경기 승자', grade: 3, classNum: 0 };
+
+    let meStatus: Match['status'] = 'scheduled';
+    let meScoreA = 0, meScoreB = 0;
+    let meTeamA = { name: '㉢ 4강 1경기 승자', grade: 3, classNum: 0 };
+    let meTeamB = { name: '㉣ 4강 2경기 승자', grade: 3, classNum: 0 };
+
+    if (sport.id === 'soccer') {
+      // 축구: ㉢ 진행중(4반 vs 2반 2:1), ㉡ 종료(1반 승), ㉠ 종료(6반 승), ㉣ 진행중(1반 vs 6반 1:0)
+      mcStatus = 'in_progress';
+      mcScoreA = 2; mcScoreB = 1;
+
+      mbStatus = 'completed';
+      mbScoreA = 3; mbScoreB = 1;
+      mbWinner = 'teamA';
+      mdTeamA = { name: `3학년 ${seed.mbA}반`, grade: 3, classNum: seed.mbA };
+
+      maStatus = 'completed';
+      maScoreA = 2; maScoreB = 1;
+      maWinner = 'teamA';
+      mdTeamB = { name: `3학년 ${seed.maA}반`, grade: 3, classNum: seed.maA };
+
+      mdStatus = 'in_progress';
+      mdScoreA = 1; mdScoreB = 0;
+    } else if (sport.id === 'futsal') {
+      // 풋살: ㉢ 종료(6반 승), ㉡ 진행중(4반 vs 3반 2:2), ㉠ 종료(1반 승)
+      mcStatus = 'completed';
+      mcScoreA = 3; mcScoreB = 1;
+      mcWinner = 'teamA';
+      meTeamA = { name: `3학년 ${seed.mcA}반`, grade: 3, classNum: seed.mcA };
+
+      mbStatus = 'in_progress';
+      mbScoreA = 2; mbScoreB = 2;
+
+      maStatus = 'completed';
+      maScoreA = 4; maScoreB = 2;
+      maWinner = 'teamA';
+      mdTeamB = { name: `3학년 ${seed.maA}반`, grade: 3, classNum: seed.maA };
+    } else if (sport.id === 'dodgeball') {
+      // 피구: ㉢ 종료(4반 승), ㉡ 종료(6반 승), ㉠ 진행중(3반 vs 1반 11:10)
+      mcStatus = 'completed';
+      mcScoreA = 15; mcScoreB = 12;
+      mcWinner = 'teamA';
+      meTeamA = { name: `3학년 ${seed.mcA}반`, grade: 3, classNum: seed.mcA };
+
+      mbStatus = 'completed';
+      mbScoreA = 14; mbScoreB = 10;
+      mbWinner = 'teamA';
+      mdTeamA = { name: `3학년 ${seed.mbA}반`, grade: 3, classNum: seed.mbA };
+
+      maStatus = 'in_progress';
+      maScoreA = 11; maScoreB = 10;
+      mdStatus = 'in_progress';
+    } else if (sport.id === 'tug_of_war') {
+      // 줄다리기: ㉢ 진행중(4반 vs 2반 1:0)
+      mcStatus = 'in_progress';
+      mcScoreA = 1; mcScoreB = 0;
+    }
+
+    // ㉡ 8강 1경기 (mb)
     matches.push({
-      id: m1Id,
+      id: mbId,
       sport: sport.id,
       grade: 3,
       matchNumber: 1,
-      bracketLabel: '① 8강 1경기',
+      matchLetter: 'ㄴ',
+      bracketLabel: '㉡ 8강 1경기',
       round: '8강',
-      teamA: { name: '3학년 1반', grade: 3, classNum: 1 },
-      teamB: { name: '3학년 6반', grade: 3, classNum: 6 },
-      scoreA: 3,
-      scoreB: 1,
-      status: 'completed',
-      winnerTeam: 'teamA',
+      teamA: { name: `3학년 ${seed.mbA}반`, grade: 3, classNum: seed.mbA },
+      teamB: { name: `3학년 ${seed.mbB}반`, grade: 3, classNum: seed.mbB },
+      scoreA: mbScoreA,
+      scoreB: mbScoreB,
+      status: mbStatus,
+      winnerTeam: mbWinner,
       time: '09:40',
       court,
       pointsForWinner: Math.round(pts * 0.3),
     });
 
-    // 8강 2경기 (2반 vs 5반)
+    // ㉠ 8강 2경기 (ma)
     matches.push({
-      id: m2Id,
+      id: maId,
       sport: sport.id,
       grade: 3,
       matchNumber: 2,
-      bracketLabel: '② 8강 2경기',
+      matchLetter: 'ㄱ',
+      bracketLabel: '㉠ 8강 2경기',
       round: '8강',
-      teamA: { name: '3학년 2반', grade: 3, classNum: 2 },
-      teamB: { name: '3학년 5반', grade: 3, classNum: 5 },
-      scoreA: 2,
-      scoreB: 0,
-      status: 'completed',
-      winnerTeam: 'teamA',
+      teamA: { name: `3학년 ${seed.maA}반`, grade: 3, classNum: seed.maA },
+      teamB: { name: `3학년 ${seed.maB}반`, grade: 3, classNum: seed.maB },
+      scoreA: maScoreA,
+      scoreB: maScoreB,
+      status: maStatus,
+      winnerTeam: maWinner,
       time: '10:10',
       court,
       pointsForWinner: Math.round(pts * 0.3),
     });
 
-    // 4강 1경기 (Winner ① 1반 vs 3반 [부전승 배정])
+    // ㉢ 4강 1경기 (mc): 좌측 준결승 (승자가 결승 ㉤ 직행)
     matches.push({
-      id: m3Id,
+      id: mcId,
       sport: sport.id,
       grade: 3,
       matchNumber: 3,
-      bracketLabel: '③ 4강 1경기',
+      matchLetter: 'ㄷ',
+      bracketLabel: '㉢ 4강 1경기',
       round: '4강',
-      teamA: { name: '3학년 1반', grade: 3, classNum: 1 },
-      teamB: { name: '3학년 3반 (부전승)', grade: 3, classNum: 3 },
-      scoreA: 2,
-      scoreB: 1,
-      status: 'in_progress',
-      time: '13:20',
+      teamA: { name: `3학년 ${seed.mcA}반`, grade: 3, classNum: seed.mcA },
+      teamB: { name: `3학년 ${seed.mcB}반`, grade: 3, classNum: seed.mcB },
+      scoreA: mcScoreA,
+      scoreB: mcScoreB,
+      status: mcStatus,
+      winnerTeam: mcWinner,
+      time: '13:00',
       court,
       pointsForWinner: Math.round(pts * 0.5),
-      sourceMatchAId: m1Id,
     });
 
-    // 4강 2경기 (Winner ② 2반 vs 4반 [부전승 배정])
+    // ㉣ 4강 2경기 (md): ㉡ 승자 vs ㉠ 승자
     matches.push({
-      id: m4Id,
+      id: mdId,
       sport: sport.id,
       grade: 3,
       matchNumber: 4,
-      bracketLabel: '④ 4강 2경기',
+      matchLetter: 'ㄹ',
+      bracketLabel: '㉣ 4강 2경기',
       round: '4강',
-      teamA: { name: '3학년 2반', grade: 3, classNum: 2 },
-      teamB: { name: '3학년 4반 (부전승)', grade: 3, classNum: 4 },
-      scoreA: 1,
-      scoreB: 2,
-      status: 'in_progress',
-      time: '13:50',
+      teamA: mdTeamA,
+      teamB: mdTeamB,
+      scoreA: mdScoreA,
+      scoreB: mdScoreB,
+      status: mdStatus,
+      time: '13:40',
       court,
       pointsForWinner: Math.round(pts * 0.5),
-      sourceMatchAId: m2Id,
+      sourceMatchAId: mbId,
+      sourceMatchBId: maId,
     });
 
-    // 결승전 (③ 승자 vs ④ 승자)
+    // ㉤ 결승전 (me): ㉢ 승자 vs ㉣ 승자
     matches.push({
-      id: m5Id,
+      id: meId,
       sport: sport.id,
       grade: 3,
       matchNumber: 5,
-      bracketLabel: '⑤ 결승전 (FINAL)',
+      matchLetter: 'ㅁ',
+      bracketLabel: '㉤ 결승전 (FINAL)',
       round: '결승',
-      teamA: { name: '③ 4강 1경기 승자', grade: 3, classNum: 0 },
-      teamB: { name: '④ 4강 2경기 승자', grade: 3, classNum: 0 },
-      scoreA: 0,
-      scoreB: 0,
-      status: 'scheduled',
-      time: '15:30',
+      teamA: meTeamA,
+      teamB: meTeamB,
+      scoreA: meScoreA,
+      scoreB: meScoreB,
+      status: meStatus,
+      time: '15:20',
       court,
       pointsForWinner: pts,
-      sourceMatchAId: m3Id,
-      sourceMatchBId: m4Id,
+      sourceMatchAId: mcId,
+      sourceMatchBId: mdId,
     });
   });
 

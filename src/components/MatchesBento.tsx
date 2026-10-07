@@ -543,7 +543,8 @@ function Grade2TournamentTree({
 }
 
 // ---------------------------------------------------------------------------
-// 3학년 토너먼트 트리 컴포넌트 (6학급 5경기)
+// 3학년 토너먼트 트리 컴포넌트 (사용자 도면 media_1791381767024.png 반영)
+// ㉡, ㉠ -> ㉣ & ㉢ -> ㉤ (결승전)
 // ---------------------------------------------------------------------------
 function Grade3TournamentTree({
   matches,
@@ -562,80 +563,100 @@ function Grade3TournamentTree({
   onFinish: (match: Match, winner: 'teamA' | 'teamB') => void;
   onCancel?: (matchId: string) => void;
 }) {
-  const m1 = matches.find((m) => m.matchNumber === 1);
-  const m2 = matches.find((m) => m.matchNumber === 2);
-  const m3 = matches.find((m) => m.matchNumber === 3);
-  const m4 = matches.find((m) => m.matchNumber === 4);
-  const m5 = matches.find((m) => m.matchNumber === 5);
+  const mb = matches.find((m) => m.matchLetter === 'ㄴ' || m.matchNumber === 1);
+  const ma = matches.find((m) => m.matchLetter === 'ㄱ' || m.matchNumber === 2);
+  const mc = matches.find((m) => m.matchLetter === 'ㄷ' || m.matchNumber === 3);
+  const md = matches.find((m) => m.matchLetter === 'ㄹ' || m.matchNumber === 4);
+  const me = matches.find((m) => m.matchLetter === 'ㅁ' || m.matchNumber === 5);
 
   return (
     <div className="min-w-[1000px] flex items-stretch gap-6 py-2">
-      {/* 8강 (2경기) */}
-      <div className="flex-1 flex flex-col justify-around gap-3">
+      {/* 1단계: 8강 (㉡, ㉠ 경기) */}
+      <div className="flex-1 flex flex-col justify-end gap-3">
         <div className="text-center pb-2">
           <span className="text-xs font-black px-3 py-1 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
             1단계: 8강
           </span>
-          <p className="text-[11px] text-slate-400 mt-1">3반, 4반 4강 직행 배정</p>
+          <p className="text-[11px] text-slate-400 mt-1">㉡, ㉠ 승자 4강(㉣) 진출</p>
         </div>
-        {m1 && (
-          <BracketMatchCard
-            match={m1}
-            isScorerMode={isScorerMode}
-            onScoreUpdate={onScoreUpdate}
-            onFinish={onFinish}
-            onCancel={onCancel}
-          />
-        )}
-        {m2 && (
-          <BracketMatchCard
-            match={m2}
-            isScorerMode={isScorerMode}
-            onScoreUpdate={onScoreUpdate}
-            onFinish={onFinish}
-            onCancel={onCancel}
-          />
-        )}
+        <div className="flex-1 flex flex-col justify-end gap-3 pb-2">
+          {mb && (
+            <div className="relative">
+              <BracketMatchCard
+                match={mb}
+                isScorerMode={isScorerMode}
+                onScoreUpdate={onScoreUpdate}
+                onFinish={onFinish}
+                onCancel={onCancel}
+              />
+              <div className="hidden lg:block absolute -right-6 top-1/2 w-6 h-[2px] bg-indigo-500/30" />
+            </div>
+          )}
+          {ma && (
+            <div className="relative">
+              <BracketMatchCard
+                match={ma}
+                isScorerMode={isScorerMode}
+                onScoreUpdate={onScoreUpdate}
+                onFinish={onFinish}
+                onCancel={onCancel}
+              />
+              <div className="hidden lg:block absolute -right-6 top-1/2 w-6 h-[2px] bg-indigo-500/30" />
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* 4강 (2경기) */}
-      <div className="flex-1 flex flex-col justify-around gap-4">
+      {/* 2단계: 4강 준결승 (㉢ 4강 1경기 & ㉣ 4강 2경기) */}
+      <div className="flex-1 flex flex-col justify-between gap-4">
         <div className="text-center pb-2">
           <span className="text-xs font-black px-3 py-1 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
             2단계: 4강 준결승
           </span>
+          <p className="text-[11px] text-slate-400 mt-1">㉢ & ㉣ 승자 결승(㉤) 진출</p>
         </div>
-        {m3 && (
-          <BracketMatchCard
-            match={m3}
-            isScorerMode={isScorerMode}
-            onScoreUpdate={onScoreUpdate}
-            onFinish={onFinish}
-            onCancel={onCancel}
-          />
-        )}
-        {m4 && (
-          <BracketMatchCard
-            match={m4}
-            isScorerMode={isScorerMode}
-            onScoreUpdate={onScoreUpdate}
-            onFinish={onFinish}
-            onCancel={onCancel}
-          />
-        )}
+
+        {/* ㉢ 4강 1경기 (좌측 준결승) */}
+        <div className="relative">
+          {mc && (
+            <BracketMatchCard
+              match={mc}
+              isScorerMode={isScorerMode}
+              onScoreUpdate={onScoreUpdate}
+              onFinish={onFinish}
+              onCancel={onCancel}
+            />
+          )}
+          <div className="hidden lg:block absolute -right-6 top-1/2 w-6 h-[2px] bg-indigo-500/30" />
+        </div>
+
+        {/* ㉣ 4강 2경기 (㉡ 승자 vs ㉠ 승자) */}
+        <div className="relative">
+          {md && (
+            <BracketMatchCard
+              match={md}
+              isScorerMode={isScorerMode}
+              onScoreUpdate={onScoreUpdate}
+              onFinish={onFinish}
+              onCancel={onCancel}
+            />
+          )}
+          <div className="hidden lg:block absolute -right-6 top-1/2 w-6 h-[2px] bg-indigo-500/30" />
+        </div>
       </div>
 
-      {/* 결승전 */}
+      {/* 3단계: 결승전 (㉤: ㉢ 승자 vs ㉣ 승자) */}
       <div className="flex-1 flex flex-col justify-center gap-3">
         <div className="text-center pb-2">
           <span className="text-xs font-black px-3 py-1 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center gap-1">
-            <Trophy className="w-3.5 h-3.5" /> 결승전 (FINAL)
+            <Trophy className="w-3.5 h-3.5" /> 3단계: 결승전 (FINAL)
           </span>
+          <p className="text-[11px] text-slate-400 mt-1">3학년 최종 챔피언 결정전</p>
         </div>
-        <div className="flex-1 flex flex-col justify-center">
-          {m5 && (
+        <div className="flex-1 flex flex-col justify-center relative">
+          {me && (
             <BracketMatchCard
-              match={m5}
+              match={me}
               isFinal={true}
               isScorerMode={isScorerMode}
               onScoreUpdate={onScoreUpdate}
@@ -643,10 +664,11 @@ function Grade3TournamentTree({
               onCancel={onCancel}
             />
           )}
+          <div className="hidden lg:block absolute -right-6 top-1/2 w-6 h-[2px] bg-amber-500/40" />
         </div>
       </div>
 
-      {/* 3학년 챔피언 카드 */}
+      {/* 4단계: 3학년 최종 우승 학급 카드 */}
       <div className="w-64 flex flex-col justify-center">
         <div className="text-center pb-2">
           <span className="text-xs font-black px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
