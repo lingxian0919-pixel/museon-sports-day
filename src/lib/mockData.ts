@@ -45,6 +45,72 @@ const SPORT_COURTS: Record<string, string> = {
   disc_golf: '디스크골프 잔디존',
 };
 
+// 종목별 공식 배점표 (1등 ~ 7등) - 사용자 업로드 기준표 정확 반영
+export const SPORT_RANK_POINTS_TABLE: Record<string, number[]> = {
+  // [1등, 2등, 3등, 4등, 5등, 6등, 7등]
+  three_legged: [160, 140, 120, 100, 80, 80, 80],
+  soccer: [150, 130, 110, 90, 70, 70, 70],
+  dodgeball: [180, 160, 140, 120, 70, 70, 70],
+  futsal: [150, 130, 110, 90, 70, 70, 70],
+  jump_rope: [160, 140, 120, 100, 80, 80, 80],
+  tug_of_war: [200, 180, 160, 140, 120, 120, 120],
+  relay: [150, 130, 110, 90, 70, 70, 70],
+  ox_quiz: [50, 40, 30, 0, 0, 0, 0],
+  bottle_flip: [50, 40, 30, 0, 0, 0, 0],
+  jegichagi: [50, 40, 30, 0, 0, 0, 0],
+  disc_golf: [50, 40, 30, 0, 0, 0, 0],
+};
+
+// 종목 및 순위(1~7)에 따른 공식 배점 반환 함수
+export function getRankPoints(sportId: string, rank: number): number {
+  if (rank <= 0) return 0;
+  const table = SPORT_RANK_POINTS_TABLE[sportId];
+  if (!table) return 0;
+  const idx = rank - 1;
+  if (idx < table.length) {
+    return table[idx];
+  }
+  return table[table.length - 1]; // 7위 이상은 7위 점수 적용
+}
+
+// 토너먼트 라운드별 공식 배점 및 뱃지 라벨 반환
+export function getTournamentRoundPoints(
+  sportId: string,
+  round: string
+): { points: number; badgeText: string } {
+  const table = SPORT_RANK_POINTS_TABLE[sportId] || [150, 130, 110, 90, 70, 70, 70];
+  if (round === '결승') {
+    return {
+      points: table[0], // 1등 배점
+      badgeText: `1등 ${table[0]}pt (준우승 ${table[1]}pt)`,
+    };
+  }
+  if (round === '4강') {
+    return {
+      points: table[2], // 3등 배점 (4강 진출팀 확보 배점 110~90pt)
+      badgeText: `4강 ${table[2]}~${table[3]}pt`,
+    };
+  }
+  // 예선 or 8강
+  return {
+    points: table[4], // 5~7등 기본 참가 배점
+    badgeText: `기본 ${table[4]}pt`,
+  };
+}
+
+// 기존 인터페이스 호환용 계산 함수
+export function calculateRankPoints(sportIdOrPoints: string | number, rank: number): number {
+  if (typeof sportIdOrPoints === 'string') {
+    return getRankPoints(sportIdOrPoints, rank);
+  }
+  if (rank <= 0) return 0;
+  if (sportIdOrPoints === 160) return [160, 140, 120, 100, 80, 80, 80][rank - 1] ?? 80;
+  if (sportIdOrPoints === 180) return [180, 160, 140, 120, 70, 70, 70][rank - 1] ?? 70;
+  if (sportIdOrPoints === 200) return [200, 180, 160, 140, 120, 120, 120][rank - 1] ?? 120;
+  if (sportIdOrPoints === 50) return [50, 40, 30, 0, 0, 0, 0][rank - 1] ?? 0;
+  return [150, 130, 110, 90, 70, 70, 70][rank - 1] ?? 70;
+}
+
 // 1학년 5학급 전용 대진표 생성 (사용자 지정 대진표 반영)
 function generateGrade1Matches(): Match[] {
   // 사용자 제공 이미지(media_1791379320127.png)의 1학년 5개반 정확한 대진표
@@ -144,7 +210,7 @@ function generateGrade1Matches(): Match[] {
       winnerTeam: m1Winner,
       time: '10:00',
       court,
-      pointsForWinner: Math.round(pts * 0.3),
+      pointsForWinner: getTournamentRoundPoints(sport.id, '예선').points,
     });
 
     // ② 4강 1경기
@@ -163,7 +229,7 @@ function generateGrade1Matches(): Match[] {
       winnerTeam: m2Winner,
       time: '11:00',
       court,
-      pointsForWinner: Math.round(pts * 0.5),
+      pointsForWinner: getTournamentRoundPoints(sport.id, '4강').points,
     });
 
     // ③ 4강 2경기: ① 예선 승자 vs m3B
@@ -181,7 +247,7 @@ function generateGrade1Matches(): Match[] {
       status: m3Status,
       time: '11:40',
       court,
-      pointsForWinner: Math.round(pts * 0.5),
+      pointsForWinner: getTournamentRoundPoints(sport.id, '4강').points,
       sourceMatchAId: m1Id,
     });
 
@@ -200,7 +266,7 @@ function generateGrade1Matches(): Match[] {
       status: m4Status,
       time: '14:30',
       court,
-      pointsForWinner: pts,
+      pointsForWinner: getTournamentRoundPoints(sport.id, '결승').points,
       sourceMatchAId: m2Id,
       sourceMatchBId: m3Id,
     });
@@ -357,7 +423,7 @@ function generateGrade2Matches(): Match[] {
       winnerTeam: mcWinner,
       time: '09:30',
       court,
-      pointsForWinner: Math.round(pts * 0.3),
+      pointsForWinner: getTournamentRoundPoints(sport.id, '8강').points,
     });
 
     // ⓑ 8강 2경기 (mb)
@@ -377,7 +443,7 @@ function generateGrade2Matches(): Match[] {
       winnerTeam: mbWinner,
       time: '10:00',
       court,
-      pointsForWinner: Math.round(pts * 0.3),
+      pointsForWinner: getTournamentRoundPoints(sport.id, '8강').points,
     });
 
     // ⓐ 8강 3경기 (ma)
@@ -397,7 +463,7 @@ function generateGrade2Matches(): Match[] {
       winnerTeam: maWinner,
       time: '10:30',
       court,
-      pointsForWinner: Math.round(pts * 0.3),
+      pointsForWinner: getTournamentRoundPoints(sport.id, '8강').points,
     });
 
     // ⓔ 4강 1경기 (me): ⓒ 승자 vs ⓑ 승자
@@ -417,7 +483,7 @@ function generateGrade2Matches(): Match[] {
       winnerTeam: meWinner,
       time: '13:00',
       court,
-      pointsForWinner: Math.round(pts * 0.5),
+      pointsForWinner: getTournamentRoundPoints(sport.id, '4강').points,
       sourceMatchAId: mcId,
       sourceMatchBId: mbId,
     });
@@ -438,7 +504,7 @@ function generateGrade2Matches(): Match[] {
       status: mdStatus,
       time: '13:30',
       court,
-      pointsForWinner: Math.round(pts * 0.5),
+      pointsForWinner: getTournamentRoundPoints(sport.id, '4강').points,
       sourceMatchAId: maId,
     });
 
@@ -458,7 +524,7 @@ function generateGrade2Matches(): Match[] {
       status: mfStatus,
       time: '15:10',
       court,
-      pointsForWinner: pts,
+      pointsForWinner: getTournamentRoundPoints(sport.id, '결승').points,
       sourceMatchAId: meId,
       sourceMatchBId: mdId,
     });
@@ -602,7 +668,7 @@ function generateGrade3Matches(): Match[] {
       winnerTeam: mbWinner,
       time: '09:40',
       court,
-      pointsForWinner: Math.round(pts * 0.3),
+      pointsForWinner: getTournamentRoundPoints(sport.id, '8강').points,
     });
 
     // ㉠ 8강 2경기 (ma)
@@ -622,7 +688,7 @@ function generateGrade3Matches(): Match[] {
       winnerTeam: maWinner,
       time: '10:10',
       court,
-      pointsForWinner: Math.round(pts * 0.3),
+      pointsForWinner: getTournamentRoundPoints(sport.id, '8강').points,
     });
 
     // ㉢ 4강 1경기 (mc): 좌측 준결승 (승자가 결승 ㉤ 직행)
@@ -642,7 +708,7 @@ function generateGrade3Matches(): Match[] {
       winnerTeam: mcWinner,
       time: '13:00',
       court,
-      pointsForWinner: Math.round(pts * 0.5),
+      pointsForWinner: getTournamentRoundPoints(sport.id, '4강').points,
     });
 
     // ㉣ 4강 2경기 (md): ㉡ 승자 vs ㉠ 승자
@@ -661,7 +727,7 @@ function generateGrade3Matches(): Match[] {
       status: mdStatus,
       time: '13:40',
       court,
-      pointsForWinner: Math.round(pts * 0.5),
+      pointsForWinner: getTournamentRoundPoints(sport.id, '4강').points,
       sourceMatchAId: mbId,
       sourceMatchBId: maId,
     });
@@ -682,7 +748,7 @@ function generateGrade3Matches(): Match[] {
       status: meStatus,
       time: '15:20',
       court,
-      pointsForWinner: pts,
+      pointsForWinner: getTournamentRoundPoints(sport.id, '결승').points,
       sourceMatchAId: mcId,
       sourceMatchBId: mdId,
     });
@@ -697,46 +763,7 @@ export const INITIAL_MATCHES: Match[] = [
   ...generateGrade3Matches(),
 ];
 
-// 종목별 공식 배점표 (1등 ~ 7등) - 사용자 업로드 기준표 정확 반영
-export const SPORT_RANK_POINTS_TABLE: Record<string, number[]> = {
-  // [1등, 2등, 3등, 4등, 5등, 6등, 7등]
-  three_legged: [160, 140, 120, 100, 80, 80, 80],
-  soccer: [150, 130, 110, 90, 70, 70, 70],
-  dodgeball: [180, 160, 140, 120, 70, 70, 70],
-  futsal: [150, 130, 110, 90, 70, 70, 70],
-  jump_rope: [160, 140, 120, 100, 80, 80, 80],
-  tug_of_war: [200, 180, 160, 140, 120, 120, 120],
-  relay: [150, 130, 110, 90, 70, 70, 70],
-  ox_quiz: [50, 40, 30, 0, 0, 0, 0],
-  bottle_flip: [50, 40, 30, 0, 0, 0, 0],
-  jegichagi: [50, 40, 30, 0, 0, 0, 0],
-  disc_golf: [50, 40, 30, 0, 0, 0, 0],
-};
 
-// 종목 및 순위(1~7)에 따른 공식 배점 반환 함수
-export function getRankPoints(sportId: string, rank: number): number {
-  if (rank <= 0) return 0;
-  const table = SPORT_RANK_POINTS_TABLE[sportId];
-  if (!table) return 0;
-  const idx = rank - 1;
-  if (idx < table.length) {
-    return table[idx];
-  }
-  return table[table.length - 1]; // 7위 이상은 7위 점수 적용
-}
-
-// 기존 인터페이스 호환용 계산 함수
-export function calculateRankPoints(sportIdOrPoints: string | number, rank: number): number {
-  if (typeof sportIdOrPoints === 'string') {
-    return getRankPoints(sportIdOrPoints, rank);
-  }
-  if (rank <= 0) return 0;
-  if (sportIdOrPoints === 160) return [160, 140, 120, 100, 80, 80, 80][rank - 1] ?? 80;
-  if (sportIdOrPoints === 180) return [180, 160, 140, 120, 70, 70, 70][rank - 1] ?? 70;
-  if (sportIdOrPoints === 200) return [200, 180, 160, 140, 120, 120, 120][rank - 1] ?? 120;
-  if (sportIdOrPoints === 50) return [50, 40, 30, 0, 0, 0, 0][rank - 1] ?? 0;
-  return [150, 130, 110, 90, 70, 70, 70][rank - 1] ?? 70;
-}
 
 // 순위형 7개 종목 초기 학급별 순위 및 기록 데이터 생성
 export function generateInitialSportRankings(): SportRankingEntry[] {

@@ -26,6 +26,7 @@ import {
   isTournamentSport,
   calculateRankPoints,
   getRankPoints,
+  getTournamentRoundPoints,
 } from '../lib/mockData';
 import ScoreRulesModal from './ScoreRulesModal';
 
@@ -249,63 +250,103 @@ export default function MatchesBento({
 
       {/* 4. 종목별 콘텐츠 렌더링 (토너먼트 vs 순위제 분기) */}
       {isTournamentSport(selectedSport) ? (
-        viewMode === 'bracket' ? (
-          <div className="overflow-x-auto pb-4 no-scrollbar">
-            {selectedGrade === 1 && (
-              <Grade1TournamentTree
-                matches={gradeMatches}
-                sportName={getSportName(selectedSport)}
-                championTeam={championTeam}
-                isScorerMode={isScorerMode}
-                onScoreUpdate={onScoreUpdate}
-                onFinish={handleFinish}
-                onCancel={onCancelWinner}
-                onStatusUpdate={onStatusUpdate}
-              />
-            )}
+        <div className="space-y-4">
+          {/* 토너먼트 공식 배점 기준 안내 배너 */}
+          <div className="glass-card p-3.5 rounded-2xl border border-indigo-500/20 bg-indigo-500/5">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-600 dark:text-indigo-400">
+                    <Trophy className="w-4 h-4" />
+                  </span>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+                    {selectedGrade}학년 {getSportName(selectedSport)} - 토너먼트 공식 배점 기준
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  경기 결과에 따라 학년별 최종 순위 배점이 자동 결정됩니다 • 공식 배점 기준표 연동
+                </p>
+              </div>
 
-            {selectedGrade === 2 && (
-              <Grade2TournamentTree
-                matches={gradeMatches}
-                sportName={getSportName(selectedSport)}
-                championTeam={championTeam}
-                isScorerMode={isScorerMode}
-                onScoreUpdate={onScoreUpdate}
-                onFinish={handleFinish}
-                onCancel={onCancelWinner}
-                onStatusUpdate={onStatusUpdate}
-              />
-            )}
+              {/* 공식 배점표 뱃지 */}
+              <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
+                <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-600 dark:text-amber-300 font-black border border-amber-500/30">
+                  🥇 1위(우승) {getRankPoints(selectedSport, 1)}pt
+                </span>
+                <span className="px-2 py-0.5 rounded-md bg-slate-200/80 dark:bg-slate-700/80 text-slate-700 dark:text-slate-300 font-bold">
+                  🥈 2위(준우승) {getRankPoints(selectedSport, 2)}pt
+                </span>
+                <span className="px-2 py-0.5 rounded-md bg-orange-500/15 text-orange-600 dark:text-orange-400 font-bold">
+                  🥉 3위(4강) {getRankPoints(selectedSport, 3)}pt
+                </span>
+                <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                  4위(4강) {getRankPoints(selectedSport, 4)}pt
+                </span>
+                <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">
+                  5~7위(기본) {getRankPoints(selectedSport, 5)}pt
+                </span>
+              </div>
+            </div>
+          </div>
 
-            {selectedGrade === 3 && (
-              <Grade3TournamentTree
-                matches={gradeMatches}
-                sportName={getSportName(selectedSport)}
-                championTeam={championTeam}
-                isScorerMode={isScorerMode}
-                onScoreUpdate={onScoreUpdate}
-                onFinish={handleFinish}
-                onCancel={onCancelWinner}
-                onStatusUpdate={onStatusUpdate}
-              />
-            )}
-          </div>
-        ) : (
-          /* 목록형 뷰 */
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {gradeMatches.map((m) => (
-              <BracketMatchCard
-                key={m.id}
-                match={m}
-                isScorerMode={isScorerMode}
-                onScoreUpdate={onScoreUpdate}
-                onFinish={handleFinish}
-                onCancel={onCancelWinner}
-                onStatusUpdate={onStatusUpdate}
-              />
-            ))}
-          </div>
-        )
+          {viewMode === 'bracket' ? (
+            <div className="overflow-x-auto pb-4 no-scrollbar">
+              {selectedGrade === 1 && (
+                <Grade1TournamentTree
+                  matches={gradeMatches}
+                  sportName={getSportName(selectedSport)}
+                  championTeam={championTeam}
+                  isScorerMode={isScorerMode}
+                  onScoreUpdate={onScoreUpdate}
+                  onFinish={handleFinish}
+                  onCancel={onCancelWinner}
+                  onStatusUpdate={onStatusUpdate}
+                />
+              )}
+
+              {selectedGrade === 2 && (
+                <Grade2TournamentTree
+                  matches={gradeMatches}
+                  sportName={getSportName(selectedSport)}
+                  championTeam={championTeam}
+                  isScorerMode={isScorerMode}
+                  onScoreUpdate={onScoreUpdate}
+                  onFinish={handleFinish}
+                  onCancel={onCancelWinner}
+                  onStatusUpdate={onStatusUpdate}
+                />
+              )}
+
+              {selectedGrade === 3 && (
+                <Grade3TournamentTree
+                  matches={gradeMatches}
+                  sportName={getSportName(selectedSport)}
+                  championTeam={championTeam}
+                  isScorerMode={isScorerMode}
+                  onScoreUpdate={onScoreUpdate}
+                  onFinish={handleFinish}
+                  onCancel={onCancelWinner}
+                  onStatusUpdate={onStatusUpdate}
+                />
+              )}
+            </div>
+          ) : (
+            /* 목록형 뷰 */
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {gradeMatches.map((m) => (
+                <BracketMatchCard
+                  key={m.id}
+                  match={m}
+                  isScorerMode={isScorerMode}
+                  onScoreUpdate={onScoreUpdate}
+                  onFinish={handleFinish}
+                  onCancel={onCancelWinner}
+                  onStatusUpdate={onStatusUpdate}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       ) : (
         /* 순위제 7개 종목 (2인 3각, 단체 줄넘기, 이어달리기, OX퀴즈, 물병던지기, 제기차기, 디스크 골프) */
         <SportRankingSection
@@ -819,7 +860,7 @@ function BracketMatchCard({
     >
       {/* 카드 상단 정보 */}
       <div className="flex items-center justify-between text-xs mb-2">
-        <div className="flex items-center gap-1.5 font-bold">
+        <div className="flex items-center gap-1.5 font-bold flex-wrap">
           <span
             className={`px-2 py-0.5 rounded-md text-[11px] ${
               isFinal
@@ -829,8 +870,16 @@ function BracketMatchCard({
           >
             {match.bracketLabel || match.round}
           </span>
-          <span className="text-[10px] text-amber-500 font-bold flex items-center gap-0.5">
-            <Award className="w-3 h-3" /> +{match.pointsForWinner}pt
+          <span
+            className={`text-[10px] font-black flex items-center gap-0.5 px-1.5 py-0.5 rounded-md border ${
+              isFinal
+                ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30'
+                : 'bg-slate-200/60 dark:bg-slate-800/80 text-amber-600 dark:text-amber-400 border-slate-300/40 dark:border-slate-700/60'
+            }`}
+            title="공식 배점 기준"
+          >
+            <Award className="w-3 h-3 text-amber-500 shrink-0" />
+            <span>{getTournamentRoundPoints(match.sport, match.round).badgeText}</span>
           </span>
         </div>
 
