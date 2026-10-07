@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import ScoreHero from '../components/ScoreHero';
 import MatchesBento from '../components/MatchesBento';
-import GradeRankingsBento from '../components/GradeRankingsBento';
 import CheeringBoardBento from '../components/CheeringBoardBento';
 import TournamentBracketModal from '../components/TournamentBracketModal';
 import { useSportsData } from '../lib/useSportsData';
@@ -60,29 +59,17 @@ export default function StudentViewerPage() {
         isScorerMode={false}
       />
 
-      {/* Hero Section: Real-time 18 Classes Overall Rankings & Grade Summary */}
+      {/* Hero Section: Real-time 18 Classes Overall Rankings */}
       <ScoreHero
         classRankings={classRankings}
-        gradeScores={gradeScores}
       />
 
-      {/* Bento Grid Main Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
-        {/* Bento Card 1: Matches and Brackets (8 cols) - 득점 조작 버튼 비활성화 (View-Only) */}
-        <div className="lg:col-span-8">
-          <MatchesBento
-            matches={matches}
-            isScorerMode={false}
-          />
-        </div>
-
-        {/* Bento Card 2: 18 Classes Rankings Leaderboard (4 cols) */}
-        <div className="lg:col-span-4">
-          <GradeRankingsBento
-            gradeScores={gradeScores}
-            classRankings={classRankings}
-          />
-        </div>
+      {/* Matches and Brackets Bento Section (View-Only) */}
+      <div className="mb-6">
+        <MatchesBento
+          matches={matches}
+          isScorerMode={false}
+        />
       </div>
 
       {/* Cheering Community Board (Supabase posts) */}

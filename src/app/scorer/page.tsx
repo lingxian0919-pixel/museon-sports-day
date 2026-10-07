@@ -4,16 +4,14 @@ import React, { useState, useEffect } from 'react';
 import Header from '../../components/Header';
 import ScoreHero from '../../components/ScoreHero';
 import MatchesBento from '../../components/MatchesBento';
-import GradeRankingsBento from '../../components/GradeRankingsBento';
 import CheeringBoardBento from '../../components/CheeringBoardBento';
 import TournamentBracketModal from '../../components/TournamentBracketModal';
 import { useSportsData } from '../../lib/useSportsData';
-import { Swords, RotateCcw, ShieldAlert, Share2, Check } from 'lucide-react';
+import { Swords, RotateCcw, ShieldAlert } from 'lucide-react';
 
 export default function ScorerAdminPage() {
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [isBracketOpen, setIsBracketOpen] = useState<boolean>(false);
-  const [copied, setCopied] = useState(false);
 
   const {
     matches,
@@ -32,14 +30,6 @@ export default function ScorerAdminPage() {
       document.documentElement.classList.remove('dark');
     }
   }, [darkMode]);
-
-  const handleCopyScorerLink = () => {
-    if (typeof window !== 'undefined') {
-      navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
 
   return (
     <main className="min-h-screen pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-4 relative">
@@ -61,23 +51,6 @@ export default function ScorerAdminPage() {
 
         <div className="flex flex-wrap items-center gap-2 shrink-0">
           <button
-            onClick={handleCopyScorerLink}
-            className="px-3 py-1.5 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-bold flex items-center gap-1 transition-colors"
-          >
-            {copied ? (
-              <>
-                <Check className="w-3.5 h-3.5 text-emerald-500" />
-                <span className="text-emerald-500">기록원 링크 복사완료!</span>
-              </>
-            ) : (
-              <>
-                <Share2 className="w-3.5 h-3.5 text-amber-500" />
-                <span>기록원 링크 복사</span>
-              </>
-            )}
-          </button>
-
-          <button
             onClick={handleResetData}
             title="초기 데이터로 리셋"
             className="px-2.5 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold flex items-center gap-1 transition-colors"
@@ -96,31 +69,19 @@ export default function ScorerAdminPage() {
         isScorerMode={true}
       />
 
-      {/* Hero Section: Real-time 18 Classes Overall Rankings & Grade Summary */}
+      {/* Hero Section: Real-time 18 Classes Overall Rankings */}
       <ScoreHero
         classRankings={classRankings}
-        gradeScores={gradeScores}
       />
 
-      {/* Bento Grid Main Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
-        {/* Bento Card 1: Matches and Brackets (8 cols) - 득점 조작 버튼 활성화 (Scorer Mode) */}
-        <div className="lg:col-span-8">
-          <MatchesBento
-            matches={matches}
-            isScorerMode={true}
-            onScoreUpdate={handleScoreUpdate}
-            onFinishMatch={handleFinishMatch}
-          />
-        </div>
-
-        {/* Bento Card 2: 18 Classes Rankings Leaderboard (4 cols) */}
-        <div className="lg:col-span-4">
-          <GradeRankingsBento
-            gradeScores={gradeScores}
-            classRankings={classRankings}
-          />
-        </div>
+      {/* Matches and Brackets Bento Section (Scorer Mode) */}
+      <div className="mb-6">
+        <MatchesBento
+          matches={matches}
+          isScorerMode={true}
+          onScoreUpdate={handleScoreUpdate}
+          onFinishMatch={handleFinishMatch}
+        />
       </div>
 
       {/* Cheering Community Board (Supabase posts) */}

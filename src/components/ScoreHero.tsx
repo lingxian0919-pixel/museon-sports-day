@@ -6,10 +6,10 @@ import { ClassRanking, GradeScore } from '../lib/types';
 
 interface ScoreHeroProps {
   classRankings: ClassRanking[];
-  gradeScores: GradeScore[];
+  gradeScores?: GradeScore[];
 }
 
-export default function ScoreHero({ classRankings, gradeScores }: ScoreHeroProps) {
+export default function ScoreHero({ classRankings }: ScoreHeroProps) {
   const [selectedGradeFilter, setSelectedGradeFilter] = useState<number | 'all'>('all');
 
   // Filter rankings based on selected grade
@@ -50,19 +50,14 @@ export default function ScoreHero({ classRankings, gradeScores }: ScoreHeroProps
     }
   };
 
-  // Total points for 3 grades
-  const totalAllGrades = gradeScores.reduce((sum, g) => sum + g.totalScore, 0) || 1;
-
   return (
     <div className="glass-panel p-6 sm:p-8 relative overflow-hidden mb-6">
       {/* Background glowing effects */}
       <div className="gradient-blob bg-amber-500/15 w-80 h-80 -top-10 -left-10 pointer-events-none" />
       <div className="gradient-blob bg-indigo-500/15 w-80 h-80 -bottom-10 -right-10 pointer-events-none" />
 
-      <div className="relative z-10 flex flex-col lg:flex-row items-stretch justify-between gap-8">
-        {/* Left: Overall Class Rankings (실시간 종합 순위) */}
-        <div className="w-full lg:w-7/12 flex flex-col justify-between">
-          <div>
+      <div className="relative z-10 w-full flex flex-col justify-between">
+        <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
               <div>
                 <span className="text-xs font-bold tracking-widest text-slate-500 dark:text-slate-400 uppercase flex items-center gap-1.5">
@@ -203,130 +198,49 @@ export default function ScoreHero({ classRankings, gradeScores }: ScoreHeroProps
             </div>
           </div>
 
-          {/* Quick Rank 4~8 Ticker */}
-          <div className="mt-2 pt-3 border-t border-slate-200/50 dark:border-slate-800/60">
-            <div className="text-[11px] font-bold text-slate-400 mb-2 flex items-center gap-1">
-              <TrendingUp className="w-3.5 h-3.5 text-indigo-500" /> 상위권 득점 현황 (4위 ~ 8위)
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {filteredRankings.slice(3, 8).map((cr, idx) => (
-                <div
-                  key={`${cr.grade}-${cr.classNum}`}
-                  className="glass-card px-2.5 py-1 flex items-center gap-2 text-xs"
-                >
-                  <span className="font-bold text-slate-400">{idx + 4}위</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">
-                    {cr.grade}-{cr.classNum}반
+            {/* 전체 순위 현황 (4위 이하 학급) */}
+            <div className="mt-4 pt-4 border-t border-slate-200/50 dark:border-slate-800/60">
+              <div className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-3 flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <TrendingUp className="w-4 h-4 text-indigo-500" />
+                  <span>
+                    {selectedGradeFilter === 'all'
+                      ? '4위 ~ 18위 학급 실시간 순위'
+                      : `${selectedGradeFilter}학년 4위 이하 학급 순위`}
                   </span>
-                  <span className="font-extrabold text-indigo-600 dark:text-indigo-400">
-                    {cr.score}pt
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Right: Grade-level Summary & Participation Breakdown */}
-        <div className="w-full lg:w-5/12 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold text-sm tracking-tight flex items-center gap-1.5 text-slate-800 dark:text-slate-200">
-                <Users className="w-4 h-4 text-indigo-500" /> 학년별 누적 포인트 및 참가 현황
-              </h3>
-              <span className="text-xs text-slate-500 dark:text-slate-400">총 18개 반</span>
-            </div>
-
-            <div className="space-y-3">
-              {gradeScores.map((gs) => {
-                const gradePercent = Math.round((gs.totalScore / totalAllGrades) * 100);
-                const avgScore = Math.round(gs.totalScore / gs.classesCount);
-
-                return (
-                  <div key={gs.grade} className="glass-card p-3.5 flex flex-col gap-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
-                        <span className={`w-2.5 h-2.5 rounded-full ${getGradeTheme(gs.grade).dot}`} />
-                        <span className="font-bold text-slate-900 dark:text-slate-100">
-                          {gs.grade}학년 ({gs.classesCount}개 반)
-                        </span>
-                        <span className="text-[10px] text-slate-400">
-                          반 평균 {avgScore}pt
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 font-bold">
-                        <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">
-                          {gs.totalScore.toLocaleString()}pt
-                        </span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-                          {gradePercent}%
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Progress bar */}
-                    <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden flex">
-                      <div
-                        className={`h-full transition-all duration-500 ${
-                          gs.grade === 1
-                            ? 'bg-emerald-500'
-                            : gs.grade === 2
-                            ? 'bg-blue-500'
-                            : 'bg-purple-500'
-                        }`}
-                        style={{ width: `${gradePercent}%` }}
-                      />
-                    </div>
-
-                    {/* Medals */}
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-                      <span className="text-[10px]">
-                        {gs.grade === 1 && '1반 ~ 5반 경합'}
-                        {gs.grade === 2 && '1반 ~ 7반 경합'}
-                        {gs.grade === 3 && '1반 ~ 6반 경합'}
+                </span>
+                <span className="text-[11px] text-slate-400 font-medium">
+                  총 {filteredRankings.length}개 반 출전중
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-2.5">
+                {filteredRankings.slice(3).map((cr, idx) => (
+                  <div
+                    key={`${cr.grade}-${cr.classNum}`}
+                    className="glass-card p-2.5 flex flex-col justify-between text-xs hover:border-indigo-500/40 transition-colors"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-extrabold text-slate-400 text-[11px]">{idx + 4}위</span>
+                      <span className={`text-[9px] px-1.5 py-0.2 rounded font-semibold border ${getGradeTheme(cr.grade).badge}`}>
+                        {cr.grade}학년
                       </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-amber-500 font-bold">🥇 {gs.goldMedals}</span>
-                        <span className="text-slate-400 font-bold">🥈 {gs.silverMedals}</span>
-                        <span className="text-amber-700 font-bold">🥉 {gs.bronzeMedals}</span>
-                      </div>
+                    </div>
+                    <div className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                      {cr.grade}-{cr.classNum}반
+                    </div>
+                    <div className="flex items-center justify-between mt-1 text-[11px]">
+                      <span className="font-black text-indigo-600 dark:text-indigo-400">
+                        {cr.score}pt
+                      </span>
+                      <span className="text-slate-400 text-[10px]">
+                        {cr.wins}승 {cr.losses}패
+                      </span>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Overall 3-Grade ratio bar */}
-          <div className="mt-4 pt-3 border-t border-slate-200/50 dark:border-slate-800/60">
-            <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 mb-1.5 font-semibold">
-              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-                ● 1학년 (5팀)
-              </span>
-              <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
-                ● 2학년 (7팀)
-              </span>
-              <span className="flex items-center gap-1 text-purple-600 dark:text-purple-400">
-                ● 3학년 (6팀)
-              </span>
-            </div>
-            <div className="w-full h-3 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden flex shadow-inner">
-              <div
-                className="bg-emerald-500 transition-all duration-500"
-                style={{ width: `${(gradeScores[0].totalScore / totalAllGrades) * 100}%` }}
-              />
-              <div
-                className="bg-blue-500 transition-all duration-500"
-                style={{ width: `${(gradeScores[1].totalScore / totalAllGrades) * 100}%` }}
-              />
-              <div
-                className="bg-purple-500 transition-all duration-500"
-                style={{ width: `${(gradeScores[2].totalScore / totalAllGrades) * 100}%` }}
-              />
+                ))}
             </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
