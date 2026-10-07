@@ -70,3 +70,14 @@ export interface RankingItem {
   score: number;
   played_at: string;
 }
+
+export interface SportRankingEntry {
+  id: string;
+  sportId: string;
+  grade: number;
+  classNum: number;
+  rank: number;
+  record?: string;
+  points: number;
+}
+

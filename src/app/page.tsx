@@ -12,7 +12,7 @@ import { Swords, Eye } from 'lucide-react';
 export default function StudentViewerPage() {
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [isBracketOpen, setIsBracketOpen] = useState<boolean>(false);
-  const { matches, gradeScores, classRankings } = useSportsData();
+  const { matches, gradeScores, classRankings, sportRankings } = useSportsData();
 
   // Initialize theme from system or default dark
   useEffect(() => {
@@ -69,6 +69,7 @@ export default function StudentViewerPage() {
         <MatchesBento
           matches={matches}
           isScorerMode={false}
+          sportRankings={sportRankings}
         />
       </div>
 

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { X, Trophy, Swords, CheckCircle2 } from 'lucide-react';
 import { Match } from '../lib/types';
-import { SPORT_CATEGORIES } from '../lib/mockData';
+import { SPORT_CATEGORIES, isTournamentSport } from '../lib/mockData';
 
 interface TournamentBracketModalProps {
   isOpen: boolean;
@@ -16,6 +16,8 @@ export default function TournamentBracketModal({ isOpen, onClose, matches }: Tou
   const [selectedGrade, setSelectedGrade] = useState<number>(1);
 
   if (!isOpen) return null;
+
+  const tournamentSports = SPORT_CATEGORIES.filter((s) => isTournamentSport(s.id));
 
   const getSportName = (sportId: string) => {
     return SPORT_CATEGORIES.find(s => s.id === sportId)?.name || sportId;
@@ -44,20 +46,20 @@ export default function TournamentBracketModal({ isOpen, onClose, matches }: Tou
               18개 학급 토너먼트 대진표 & 진행 현황
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              1학년(5팀), 2학년(7팀), 3학년(6팀) 종목별 토너먼트 대진 트리
+              축구, 피구, 풋살, 줄다리기 4개 종목의 학년별 토너먼트 대진 트리
             </p>
           </div>
         </div>
 
-        {/* Sport selector */}
+        {/* Sport selector (토너먼트 4개 종목) */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-3 no-scrollbar">
-          {SPORT_CATEGORIES.map((s) => (
+          {tournamentSports.map((s) => (
             <button
               key={s.id}
               onClick={() => setSelectedSport(s.id)}
               className={`px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-all ${
                 selectedSport === s.id
-                  ? 'bg-indigo-600 text-white font-bold'
+                  ? 'bg-indigo-600 text-white font-bold shadow-sm'
                   : 'glass-card text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800'
               }`}
             >

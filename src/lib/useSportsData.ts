@@ -1,22 +1,27 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Match, GradeScore, ClassRanking } from './types';
+import { Match, GradeScore, ClassRanking, SportRankingEntry, MatchStatus } from './types';
 import {
   INITIAL_MATCHES,
   INITIAL_GRADE_SCORES,
-  INITIAL_CLASS_RANKINGS
+  INITIAL_CLASS_RANKINGS,
+  INITIAL_SPORT_RANKINGS,
+  calculateRankPoints,
+  SPORT_CATEGORIES,
 } from './mockData';
 import { addRankingScore } from './supabase';
 
-const STORAGE_KEY_MATCHES = 'museon_sports_matches_v6';
-const STORAGE_KEY_GRADES = 'museon_sports_grades_v6';
-const STORAGE_KEY_CLASSES = 'museon_sports_classes_v6';
+const STORAGE_KEY_MATCHES = 'museon_sports_matches_v7';
+const STORAGE_KEY_GRADES = 'museon_sports_grades_v7';
+const STORAGE_KEY_CLASSES = 'museon_sports_classes_v7';
+const STORAGE_KEY_SPORT_RANKINGS = 'museon_sports_sport_rankings_v7';
 
 export function useSportsData() {
   const [matches, setMatches] = useState<Match[]>(INITIAL_MATCHES);
   const [gradeScores, setGradeScores] = useState<GradeScore[]>(INITIAL_GRADE_SCORES);
   const [classRankings, setClassRankings] = useState<ClassRanking[]>(INITIAL_CLASS_RANKINGS);
+  const [sportRankings, setSportRankings] = useState<SportRankingEntry[]>(INITIAL_SPORT_RANKINGS);
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load from localStorage on mount
@@ -26,10 +31,12 @@ export function useSportsData() {
         const savedMatches = localStorage.getItem(STORAGE_KEY_MATCHES);
         const savedGrades = localStorage.getItem(STORAGE_KEY_GRADES);
         const savedClasses = localStorage.getItem(STORAGE_KEY_CLASSES);
+        const savedSportRankings = localStorage.getItem(STORAGE_KEY_SPORT_RANKINGS);
 
         if (savedMatches) setMatches(JSON.parse(savedMatches));
         if (savedGrades) setGradeScores(JSON.parse(savedGrades));
         if (savedClasses) setClassRankings(JSON.parse(savedClasses));
+        if (savedSportRankings) setSportRankings(JSON.parse(savedSportRankings));
       } catch {
         // ignore
       }
@@ -46,6 +53,9 @@ export function useSportsData() {
         if (e.key === STORAGE_KEY_CLASSES && e.newValue) {
           try { setClassRankings(JSON.parse(e.newValue)); } catch {}
         }
+        if (e.key === STORAGE_KEY_SPORT_RANKINGS && e.newValue) {
+          try { setSportRankings(JSON.parse(e.newValue)); } catch {}
+        }
       };
 
       window.addEventListener('storage', handleStorage);
@@ -54,11 +64,17 @@ export function useSportsData() {
   }, []);
 
   // Save to localStorage when updated
-  const saveState = (newMatches: Match[], newGrades: GradeScore[], newClasses: ClassRanking[]) => {
+  const saveState = (
+    newMatches: Match[],
+    newGrades: GradeScore[],
+    newClasses: ClassRanking[],
+    newSportRankings: SportRankingEntry[] = sportRankings
+  ) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEY_MATCHES, JSON.stringify(newMatches));
       localStorage.setItem(STORAGE_KEY_GRADES, JSON.stringify(newGrades));
       localStorage.setItem(STORAGE_KEY_CLASSES, JSON.stringify(newClasses));
+      localStorage.setItem(STORAGE_KEY_SPORT_RANKINGS, JSON.stringify(newSportRankings));
     }
   };
 
@@ -210,12 +226,104 @@ export function useSportsData() {
     saveState(updatedMatches, updatedGrades, updatedClasses);
   };
 
+  const handleStatusUpdate = (matchId: string, status: MatchStatus) => {
+    const updatedMatches = matches.map((m) => {
+      if (m.id !== matchId) return m;
+      return {
+        ...m,
+        status,
+      };
+    });
+    setMatches(updatedMatches);
+    saveState(updatedMatches, gradeScores, classRankings, sportRankings);
+  };
+
+  const handleUpdateSportRanking = (
+    sportId: string,
+    grade: number,
+    classNum: number,
+    rank: number,
+    record?: string
+  ) => {
+    const sport = SPORT_CATEGORIES.find((s) => s.id === sportId);
+    const totalPts = sport?.totalPoints || 100;
+    const newPoints = calculateRankPoints(totalPts, rank);
+
+    let oldPoints = 0;
+    const existing = sportRankings.find(
+      (r) => r.sportId === sportId && r.grade === grade && r.classNum === classNum
+    );
+    if (existing) oldPoints = existing.points;
+
+    const delta = newPoints - oldPoints;
+
+    // 1. Update sportRankings
+    const updatedRankings = sportRankings.map((r) => {
+      if (r.sportId === sportId && r.grade === grade && r.classNum === classNum) {
+        return {
+          ...r,
+          rank,
+          record: record !== undefined ? record : r.record,
+          points: newPoints,
+        };
+      }
+      return r;
+    });
+
+    // 2. Adjust points in gradeScores
+    let updatedGrades = gradeScores;
+    if (delta !== 0) {
+      updatedGrades = gradeScores.map((gs) => {
+        if (gs.grade !== grade) return gs;
+        return {
+          ...gs,
+          totalScore: Math.max(0, gs.totalScore + delta),
+          goldMedals:
+            rank === 1
+              ? gs.goldMedals + 1
+              : existing?.rank === 1
+              ? Math.max(0, gs.goldMedals - 1)
+              : gs.goldMedals,
+        };
+      });
+    }
+
+    // 3. Adjust points in classRankings
+    let updatedClasses = classRankings;
+    if (delta !== 0) {
+      updatedClasses = classRankings.map((cr) => {
+        if (cr.grade === grade && cr.classNum === classNum) {
+          return {
+            ...cr,
+            score: Math.max(0, cr.score + delta),
+            wins: rank === 1 ? cr.wins + 1 : cr.wins,
+          };
+        }
+        return cr;
+      });
+      updatedClasses.sort((a, b) => b.score - a.score);
+      updatedClasses = updatedClasses.map((cr, idx) => ({ ...cr, rank: idx + 1 }));
+    }
+
+    setSportRankings(updatedRankings);
+    setGradeScores(updatedGrades);
+    setClassRankings(updatedClasses);
+    saveState(matches, updatedGrades, updatedClasses, updatedRankings);
+
+    // Also register to Supabase rankings if point delta is positive
+    if (delta > 0) {
+      const nickname = `${grade}학년 ${classNum}반`;
+      addRankingScore(nickname, delta).catch(() => {});
+    }
+  };
+
   const handleResetData = () => {
     if (confirm('모든 점수와 경기 상태를 초기 상태로 리셋하시겠습니까?')) {
       setMatches(INITIAL_MATCHES);
       setGradeScores(INITIAL_GRADE_SCORES);
       setClassRankings(INITIAL_CLASS_RANKINGS);
-      saveState(INITIAL_MATCHES, INITIAL_GRADE_SCORES, INITIAL_CLASS_RANKINGS);
+      setSportRankings(INITIAL_SPORT_RANKINGS);
+      saveState(INITIAL_MATCHES, INITIAL_GRADE_SCORES, INITIAL_CLASS_RANKINGS, INITIAL_SPORT_RANKINGS);
     }
   };
 
@@ -223,10 +331,14 @@ export function useSportsData() {
     matches,
     gradeScores,
     classRankings,
+    sportRankings,
     isLoaded,
     handleScoreUpdate,
     handleFinishMatch,
     handleCancelWinner,
+    handleStatusUpdate,
+    handleUpdateSportRanking,
     handleResetData,
   };
 }
+

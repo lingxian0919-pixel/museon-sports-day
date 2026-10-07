@@ -1,18 +1,34 @@
-import { SportCategory, Match, GradeScore, ClassRanking, Post, RankingItem } from './types';
+import { SportCategory, Match, GradeScore, ClassRanking, Post, RankingItem, SportRankingEntry } from './types';
+
+// 토너먼트 진행 4개 종목
+export const TOURNAMENT_SPORT_IDS = ['soccer', 'futsal', 'dodgeball', 'tug_of_war'];
+export const isTournamentSport = (sportId: string) => TOURNAMENT_SPORT_IDS.includes(sportId);
+
+// 순위 및 기록 입력형 7개 종목
+export const RANKING_SPORT_IDS = [
+  'three_legged',
+  'jump_rope',
+  'relay',
+  'ox_quiz',
+  'bottle_flip',
+  'jegichagi',
+  'disc_golf',
+];
 
 export const SPORT_CATEGORIES: SportCategory[] = [
-  { id: 'three_legged', name: '2인 3각', iconName: 'Users', category: '민속/단체', totalPoints: 100, description: '호흡을 맞춰 달리는 50m 반환점 2인 3각 릴레이' },
-  { id: 'soccer', name: '축구', iconName: 'Trophy', category: '구기종목', totalPoints: 150, description: '전/후반 각 20분 11인제 정규 축구 토너먼트' },
-  { id: 'dodgeball', name: '피구', iconName: 'Flame', category: '구기종목', totalPoints: 100, description: '남녀 혼성 15인 피구 서바이벌 매치' },
-  { id: 'futsal', name: '풋살', iconName: 'Activity', category: '구기종목', totalPoints: 120, description: '5인제 빠른 공수전환 실내 풋살 코트전' },
-  { id: 'jump_rope', name: '단체 줄넘기', iconName: 'Repeat', category: '민속/단체', totalPoints: 120, description: '10인 이상 단체 연속 줄넘기 기록 대결' },
-  { id: 'tug_of_war', name: '줄다리기', iconName: 'Users', category: '민속/단체', totalPoints: 150, description: '30인 단체 3판 2선승제 파워 매치' },
-  { id: 'relay', name: '이어달리기', iconName: 'Zap', category: '육상', totalPoints: 200, description: '4x100m 학급 대표 계주 결승전' },
-  { id: 'ox_quiz', name: 'OX퀴즈', iconName: 'HelpCircle', category: '특별종목', totalPoints: 80, description: '전교생 상식 및 학교 역사 퀴즈 서바이벌' },
-  { id: 'bottle_flip', name: '물병던지기', iconName: 'Target', category: '특별종목', totalPoints: 80, description: '학급 대표 물병 세우기 릴레이 챌린지' },
-  { id: 'jegichagi', name: '제기차기', iconName: 'Sparkles', category: '민속/단체', totalPoints: 80, description: '학급 대표 제기차기 연속 횟수 합산전' },
-  { id: 'disc_golf', name: '디스크 골프', iconName: 'Disc', category: '구기/레저', totalPoints: 100, description: '타깃 바스켓 플라잉디스크 퍼팅 매치' },
+  { id: 'three_legged', name: '2인 3각', iconName: 'Users', category: '순위/기록', totalPoints: 100, description: '호흡을 맞춰 달리는 50m 반환점 2인 3각 릴레이 (순위제)' },
+  { id: 'soccer', name: '축구', iconName: 'Trophy', category: '토너먼트 (남)', totalPoints: 150, description: '전/후반 각 20분 정규 축구 토너먼트' },
+  { id: 'dodgeball', name: '피구', iconName: 'Flame', category: '토너먼트 (혼성)', totalPoints: 100, description: '남녀 혼성 15인 피구 토너먼트' },
+  { id: 'futsal', name: '풋살', iconName: 'Activity', category: '토너먼트 (여)', totalPoints: 120, description: '5인제 빠른 공수전환 실내 풋살 토너먼트' },
+  { id: 'jump_rope', name: '단체 줄넘기', iconName: 'Repeat', category: '순위/기록', totalPoints: 120, description: '10인 이상 단체 연속 줄넘기 기록 대결 (순위제)' },
+  { id: 'tug_of_war', name: '줄다리기', iconName: 'Users', category: '토너먼트 (혼성)', totalPoints: 150, description: '30인 단체 파워 토너먼트' },
+  { id: 'relay', name: '이어달리기', iconName: 'Zap', category: '순위/기록', totalPoints: 200, description: '4x100m 학급 대표 계주 결승전 (순위제)' },
+  { id: 'ox_quiz', name: 'OX퀴즈', iconName: 'HelpCircle', category: '순위/기록', totalPoints: 80, description: '전교생 상식 및 학교 역사 퀴즈 서바이벌 (순위제)' },
+  { id: 'bottle_flip', name: '물병던지기', iconName: 'Target', category: '순위/기록', totalPoints: 80, description: '학급 대표 물병 세우기 릴레이 챌린지 (순위제)' },
+  { id: 'jegichagi', name: '제기차기', iconName: 'Sparkles', category: '순위/기록', totalPoints: 80, description: '학급 대표 제기차기 연속 횟수 합산전 (순위제)' },
+  { id: 'disc_golf', name: '디스크 골프', iconName: 'Disc', category: '순위/기록', totalPoints: 100, description: '타깃 바스켓 플라잉디스크 퍼팅 매치 (순위제)' },
 ];
+
 
 // 종목별 코트 및 기본 설정
 const SPORT_COURTS: Record<string, string> = {
@@ -51,7 +67,8 @@ function generateGrade1Matches(): Match[] {
   ];
 
   const matches: Match[] = [];
-  SPORT_CATEGORIES.forEach((sport, sIdx) => {
+  const tournamentSports = SPORT_CATEGORIES.filter((s) => TOURNAMENT_SPORT_IDS.includes(s.id));
+  tournamentSports.forEach((sport, sIdx) => {
     const seed = customG1Seeds[sport.id] || defaultSeeds[sIdx % defaultSeeds.length];
     const court = SPORT_COURTS[sport.id] || '체육관';
     const pts = sport.totalPoints;
@@ -220,7 +237,8 @@ function generateGrade2Matches(): Match[] {
   ];
 
   const matches: Match[] = [];
-  SPORT_CATEGORIES.forEach((sport, sIdx) => {
+  const tournamentSports = SPORT_CATEGORIES.filter((s) => TOURNAMENT_SPORT_IDS.includes(s.id));
+  tournamentSports.forEach((sport, sIdx) => {
     const seed = customG2Seeds[sport.id] || defaultG2Seeds[sIdx % defaultG2Seeds.length];
     const court = SPORT_COURTS[sport.id] || '체육관';
     const pts = sport.totalPoints;
@@ -479,7 +497,8 @@ function generateGrade3Matches(): Match[] {
   ];
 
   const matches: Match[] = [];
-  SPORT_CATEGORIES.forEach((sport, sIdx) => {
+  const tournamentSports = SPORT_CATEGORIES.filter((s) => TOURNAMENT_SPORT_IDS.includes(s.id));
+  tournamentSports.forEach((sport, sIdx) => {
     const seed = customG3Seeds[sport.id] || defaultG3Seeds[sIdx % defaultG3Seeds.length];
     const court = SPORT_COURTS[sport.id] || '체육관';
     const pts = sport.totalPoints;
@@ -677,6 +696,112 @@ export const INITIAL_MATCHES: Match[] = [
   ...generateGrade2Matches(),
   ...generateGrade3Matches(),
 ];
+
+// 순위별 획득 포인트 계산 함수
+export function calculateRankPoints(totalPoints: number, rank: number): number {
+  if (rank <= 0) return 0;
+  if (rank === 1) return totalPoints;
+  if (rank === 2) return Math.round(totalPoints * 0.7);
+  if (rank === 3) return Math.round(totalPoints * 0.5);
+  if (rank === 4) return Math.round(totalPoints * 0.3);
+  if (rank === 5) return Math.round(totalPoints * 0.2);
+  if (rank === 6) return Math.round(totalPoints * 0.1);
+  if (rank === 7) return Math.round(totalPoints * 0.05);
+  return 0;
+}
+
+// 순위형 7개 종목 초기 학급별 순위 및 기록 데이터 생성
+export function generateInitialSportRankings(): SportRankingEntry[] {
+  const rankings: SportRankingEntry[] = [];
+  const grades = [
+    { grade: 1, classCount: 5 },
+    { grade: 2, classCount: 7 },
+    { grade: 3, classCount: 6 },
+  ];
+
+  // 종목별 실감나는 초기 기록 및 순위 프리셋
+  const presetRecords: Record<string, Record<string, { rank: number; record: string }>> = {
+    relay: {
+      'g1-c3': { rank: 1, record: '56.2초' },
+      'g1-c1': { rank: 2, record: '58.1초' },
+      'g1-c5': { rank: 3, record: '59.4초' },
+      'g1-c2': { rank: 4, record: '1분 02초' },
+      'g1-c4': { rank: 5, record: '1분 05초' },
+      'g2-c2': { rank: 1, record: '50.8초' },
+      'g2-c7': { rank: 2, record: '51.5초' },
+      'g2-c5': { rank: 3, record: '53.0초' },
+      'g3-c1': { rank: 1, record: '48.3초' },
+      'g3-c4': { rank: 2, record: '49.1초' },
+      'g3-c6': { rank: 3, record: '50.5초' },
+    },
+    jump_rope: {
+      'g1-c2': { rank: 1, record: '95회' },
+      'g1-c5': { rank: 2, record: '82회' },
+      'g1-c3': { rank: 3, record: '70회' },
+      'g2-c3': { rank: 1, record: '112회' },
+      'g2-c5': { rank: 2, record: '98회' },
+      'g3-c1': { rank: 1, record: '124회' },
+      'g3-c2': { rank: 2, record: '115회' },
+    },
+    three_legged: {
+      'g1-c4': { rank: 1, record: '32.1초' },
+      'g1-c2': { rank: 2, record: '34.8초' },
+      'g2-c2': { rank: 1, record: '28.4초' },
+      'g3-c1': { rank: 1, record: '26.9초' },
+    },
+    ox_quiz: {
+      'g1-c3': { rank: 1, record: '생존 3명' },
+      'g2-c1': { rank: 1, record: '생존 4명' },
+      'g3-c3': { rank: 1, record: '생존 5명' },
+    },
+    bottle_flip: {
+      'g1-c5': { rank: 1, record: '14개 성공' },
+      'g2-c6': { rank: 1, record: '18개 성공' },
+      'g3-c5': { rank: 1, record: '21개 성공' },
+    },
+    jegichagi: {
+      'g1-c3': { rank: 1, record: '합산 48회' },
+      'g2-c5': { rank: 1, record: '합산 62회' },
+      'g3-c6': { rank: 1, record: '합산 75회' },
+    },
+    disc_golf: {
+      'g1-c1': { rank: 1, record: '12홀 24타' },
+      'g2-c4': { rank: 1, record: '12홀 21타' },
+      'g3-c2': { rank: 1, record: '12홀 19타' },
+    },
+  };
+
+  RANKING_SPORT_IDS.forEach((sportId) => {
+    const sport = SPORT_CATEGORIES.find((s) => s.id === sportId);
+    const totalPts = sport?.totalPoints || 100;
+    const presets = presetRecords[sportId] || {};
+
+    grades.forEach(({ grade, classCount }) => {
+      for (let c = 1; c <= classCount; c++) {
+        const key = `g${grade}-c${c}`;
+        const preset = presets[key];
+        const rank = preset ? preset.rank : 0;
+        const record = preset ? preset.record : '';
+        const points = calculateRankPoints(totalPts, rank);
+
+        rankings.push({
+          id: `${sportId}-g${grade}-c${c}`,
+          sportId,
+          grade,
+          classNum: c,
+          rank,
+          record,
+          points,
+        });
+      }
+    });
+  });
+
+  return rankings;
+}
+
+export const INITIAL_SPORT_RANKINGS: SportRankingEntry[] = generateInitialSportRankings();
+
 
 
 // 학년별 총점 (1학년 5팀, 2학년 7팀, 3학년 6팀)

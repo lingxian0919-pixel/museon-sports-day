@@ -17,9 +17,12 @@ export default function ScorerAdminPage() {
     matches,
     gradeScores,
     classRankings,
+    sportRankings,
     handleScoreUpdate,
     handleFinishMatch,
     handleCancelWinner,
+    handleStatusUpdate,
+    handleUpdateSportRanking,
     handleResetData,
   } = useSportsData();
 
@@ -83,6 +86,9 @@ export default function ScorerAdminPage() {
           onScoreUpdate={handleScoreUpdate}
           onFinishMatch={handleFinishMatch}
           onCancelWinner={handleCancelWinner}
+          onStatusUpdate={handleStatusUpdate}
+          sportRankings={sportRankings}
+          onUpdateSportRanking={handleUpdateSportRanking}
         />
       </div>
 
