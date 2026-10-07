@@ -25,7 +25,7 @@ export interface SportCategory {
   id: string;
   name: string;
   iconName: string;
-  category: '구기종목' | '육상' | '민속/단체' | 'e스포츠';
+  category: string;
   totalPoints: number;
   description: string;
 }

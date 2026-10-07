@@ -3,6 +3,7 @@
 import React from 'react';
 import { X, Trophy, Swords } from 'lucide-react';
 import { Match } from '../lib/types';
+import { SPORT_CATEGORIES } from '../lib/mockData';
 
 interface TournamentBracketModalProps {
   isOpen: boolean;
@@ -12,6 +13,10 @@ interface TournamentBracketModalProps {
 
 export default function TournamentBracketModal({ isOpen, onClose, matches }: TournamentBracketModalProps) {
   if (!isOpen) return null;
+
+  const getSportName = (sportId: string) => {
+    return SPORT_CATEGORIES.find(s => s.id === sportId)?.name || sportId;
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
@@ -67,7 +72,7 @@ export default function TournamentBracketModal({ isOpen, onClose, matches }: Tou
             {matches.filter(m => m.round === '결승').slice(0, 2).map(match => (
               <div key={match.id} className="glass-card p-4 space-y-2 border-amber-500/40 bg-amber-500/5 ring-1 ring-amber-500/20">
                 <div className="flex justify-between text-[11px] font-bold text-amber-500">
-                  <span>{match.sport} 챔피언십</span>
+                  <span>{getSportName(match.sport)} 챔피언십</span>
                   <span>+{match.pointsForWinner}pt</span>
                 </div>
                 <div className="flex justify-between text-sm font-black">
