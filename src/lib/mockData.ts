@@ -14,182 +14,439 @@ export const SPORT_CATEGORIES: SportCategory[] = [
   { id: 'disc_golf', name: '디스크 골프', iconName: 'Disc', category: '구기/레저', totalPoints: 100, description: '타깃 바스켓 플라잉디스크 퍼팅 매치' },
 ];
 
+// 종목별 코트 및 기본 설정
+const SPORT_COURTS: Record<string, string> = {
+  three_legged: '대운동장 트랙 잔디구역',
+  soccer: '중앙 대운동장 A코트',
+  dodgeball: '보조 체육관 B구역',
+  futsal: '풋살 전용구장',
+  jump_rope: '실내 체육관 메인홀',
+  tug_of_war: '운동장 특설무대 앞',
+  relay: '중앙 400m 정규 트랙',
+  ox_quiz: '대강당 특설무대',
+  bottle_flip: '이벤트존 1구역',
+  jegichagi: '본관 앞 중앙광장',
+  disc_golf: '디스크골프 잔디존',
+};
+
+// 1학년 5학급 전용 대진표 생성 (사용자 지정 대진표 반영)
+function generateGrade1Matches(): Match[] {
+  // 사용자 제공 이미지(media_1791379320127.png)의 1학년 5개반 정확한 대진표
+  const customG1Seeds: Record<string, { m1A: number; m1B: number; m2A: number; m2B: number; m3B: number }> = {
+    soccer: { m1A: 1, m1B: 5, m2A: 4, m2B: 3, m3B: 2 }, // 축구(남): ① 1 vs 5, ② 4 vs 3, ③ ①승자 vs 2, ④ ②승자 vs ③승자
+    futsal: { m1A: 4, m1B: 1, m2A: 5, m2B: 3, m3B: 2 }, // 풋살(여): ① 4 vs 1, ② 5 vs 3, ③ ①승자 vs 2, ④ ②승자 vs ③승자
+    dodgeball: { m1A: 4, m1B: 5, m2A: 1, m2B: 2, m3B: 3 }, // 피구(혼성): ① 4 vs 5, ② 1 vs 2, ③ ①승자 vs 3, ④ ②승자 vs ③승자
+    tug_of_war: { m1A: 5, m1B: 2, m2A: 1, m2B: 4, m3B: 3 }, // 줄다리기(혼성): ① 5 vs 2, ② 1 vs 4, ③ ①승자 vs 3, ④ ②승자 vs ③승자
+  };
+
+  // 나머지 종목의 1학년 균형 대진표
+  const defaultSeeds = [
+    { m1A: 2, m1B: 3, m2A: 1, m2B: 4, m3B: 5 },
+    { m1A: 3, m1B: 4, m2A: 2, m2B: 5, m3B: 1 },
+    { m1A: 1, m1B: 2, m2A: 3, m2B: 4, m3B: 5 },
+    { m1A: 2, m1B: 5, m2A: 1, m2B: 3, m3B: 4 },
+    { m1A: 1, m1B: 3, m2A: 2, m2B: 4, m3B: 5 },
+    { m1A: 4, m1B: 5, m2A: 2, m2B: 3, m3B: 1 },
+    { m1A: 1, m1B: 5, m2A: 2, m2B: 3, m3B: 4 },
+  ];
+
+  const matches: Match[] = [];
+  SPORT_CATEGORIES.forEach((sport, sIdx) => {
+    const seed = customG1Seeds[sport.id] || defaultSeeds[sIdx % defaultSeeds.length];
+    const court = SPORT_COURTS[sport.id] || '체육관';
+    const pts = sport.totalPoints;
+
+    const m1Id = `${sport.id}-g1-m1`;
+    const m2Id = `${sport.id}-g1-m2`;
+    const m3Id = `${sport.id}-g1-m3`;
+    const m4Id = `${sport.id}-g1-m4`;
+
+    // 종목별 실감나는 초기 진행 상태 및 점수
+    let m1Status: Match['status'] = 'scheduled';
+    let m1ScoreA = 0, m1ScoreB = 0;
+    let m1Winner: Match['winnerTeam'] = undefined;
+
+    let m2Status: Match['status'] = 'scheduled';
+    let m2ScoreA = 0, m2ScoreB = 0;
+    let m2Winner: Match['winnerTeam'] = undefined;
+
+    let m3Status: Match['status'] = 'scheduled';
+    let m3ScoreA = 0, m3ScoreB = 0;
+    let m3TeamA = { name: '① 예선 승자', grade: 1, classNum: 0 };
+
+    let m4Status: Match['status'] = 'scheduled';
+    let m4ScoreA = 0, m4ScoreB = 0;
+    let m4TeamA = { name: '② 4강 1경기 승자', grade: 1, classNum: 0 };
+    let m4TeamB = { name: '③ 4강 2경기 승자', grade: 1, classNum: 0 };
+
+    if (sport.id === 'soccer') {
+      // 축구: ① 예선 종료(1반 승), ② 4강 진행중(4반 vs 3반 1:1), ③ 4강 진행중(1반 vs 2반 1:0)
+      m1Status = 'completed';
+      m1ScoreA = 2; m1ScoreB = 1;
+      m1Winner = 'teamA';
+      m2Status = 'in_progress';
+      m2ScoreA = 1; m2ScoreB = 1;
+      m3Status = 'in_progress';
+      m3TeamA = { name: `1학년 ${seed.m1A}반`, grade: 1, classNum: seed.m1A };
+      m3ScoreA = 1; m3ScoreB = 0;
+    } else if (sport.id === 'futsal') {
+      // 풋살: ① 예선 종료(4반 승), ② 4강 진행중(5반 vs 3반 3:2), ③ 4강 예정(4반 vs 2반)
+      m1Status = 'completed';
+      m1ScoreA = 3; m1ScoreB = 2;
+      m1Winner = 'teamA';
+      m2Status = 'in_progress';
+      m2ScoreA = 3; m2ScoreB = 2;
+      m3TeamA = { name: `1학년 ${seed.m1A}반`, grade: 1, classNum: seed.m1A };
+    } else if (sport.id === 'dodgeball') {
+      // 피구: ① 예선 진행중(4반 vs 5반 14:12), ② 4강 종료(1반 승 15:8)
+      m1Status = 'in_progress';
+      m1ScoreA = 14; m1ScoreB = 12;
+      m2Status = 'completed';
+      m2ScoreA = 15; m2ScoreB = 8;
+      m2Winner = 'teamA';
+      m4TeamA = { name: `1학년 ${seed.m2A}반`, grade: 1, classNum: seed.m2A };
+    } else if (sport.id === 'tug_of_war') {
+      // 줄다리기: ① 예선 진행중(5반 vs 2반 1:0)
+      m1Status = 'in_progress';
+      m1ScoreA = 1; m1ScoreB = 0;
+    }
+
+    // ① 예선
+    matches.push({
+      id: m1Id,
+      sport: sport.id,
+      grade: 1,
+      matchNumber: 1,
+      bracketLabel: '① 예선',
+      round: '예선',
+      teamA: { name: `1학년 ${seed.m1A}반`, grade: 1, classNum: seed.m1A },
+      teamB: { name: `1학년 ${seed.m1B}반`, grade: 1, classNum: seed.m1B },
+      scoreA: m1ScoreA,
+      scoreB: m1ScoreB,
+      status: m1Status,
+      winnerTeam: m1Winner,
+      time: '10:00',
+      court,
+      pointsForWinner: Math.round(pts * 0.3),
+    });
+
+    // ② 4강 1경기
+    matches.push({
+      id: m2Id,
+      sport: sport.id,
+      grade: 1,
+      matchNumber: 2,
+      bracketLabel: '② 4강 1경기',
+      round: '4강',
+      teamA: { name: `1학년 ${seed.m2A}반`, grade: 1, classNum: seed.m2A },
+      teamB: { name: `1학년 ${seed.m2B}반`, grade: 1, classNum: seed.m2B },
+      scoreA: m2ScoreA,
+      scoreB: m2ScoreB,
+      status: m2Status,
+      winnerTeam: m2Winner,
+      time: '11:00',
+      court,
+      pointsForWinner: Math.round(pts * 0.5),
+    });
+
+    // ③ 4강 2경기: ① 예선 승자 vs m3B
+    matches.push({
+      id: m3Id,
+      sport: sport.id,
+      grade: 1,
+      matchNumber: 3,
+      bracketLabel: '③ 4강 2경기',
+      round: '4강',
+      teamA: m3TeamA,
+      teamB: { name: `1학년 ${seed.m3B}반`, grade: 1, classNum: seed.m3B },
+      scoreA: m3ScoreA,
+      scoreB: m3ScoreB,
+      status: m3Status,
+      time: '11:40',
+      court,
+      pointsForWinner: Math.round(pts * 0.5),
+      sourceMatchAId: m1Id,
+    });
+
+    // ④ 결승전: ② 승자 vs ③ 승자
+    matches.push({
+      id: m4Id,
+      sport: sport.id,
+      grade: 1,
+      matchNumber: 4,
+      bracketLabel: '④ 결승전 (FINAL)',
+      round: '결승',
+      teamA: m4TeamA,
+      teamB: m4TeamB,
+      scoreA: m4ScoreA,
+      scoreB: m4ScoreB,
+      status: m4Status,
+      time: '14:30',
+      court,
+      pointsForWinner: pts,
+      sourceMatchAId: m2Id,
+      sourceMatchBId: m3Id,
+    });
+  });
+
+  return matches;
+}
+
+// 2학년 7학급 대진표 생성 (8강 3경기 -> 4강 2경기 -> 결승전)
+function generateGrade2Matches(): Match[] {
+  const matches: Match[] = [];
+  SPORT_CATEGORIES.forEach((sport) => {
+    const court = SPORT_COURTS[sport.id] || '체육관';
+    const pts = sport.totalPoints;
+    const base = `${sport.id}-g2`;
+
+    const m1Id = `${base}-m1`;
+    const m2Id = `${base}-m2`;
+    const m3Id = `${base}-m3`;
+    const m4Id = `${base}-m4`;
+    const m5Id = `${base}-m5`;
+    const m6Id = `${base}-m6`;
+
+    // 8강 1경기 (1반 vs 7반)
+    matches.push({
+      id: m1Id,
+      sport: sport.id,
+      grade: 2,
+      matchNumber: 1,
+      bracketLabel: '① 8강 1경기',
+      round: '8강',
+      teamA: { name: '2학년 1반', grade: 2, classNum: 1 },
+      teamB: { name: '2학년 7반', grade: 2, classNum: 7 },
+      scoreA: 2,
+      scoreB: 1,
+      status: 'completed',
+      winnerTeam: 'teamA',
+      time: '09:30',
+      court,
+      pointsForWinner: Math.round(pts * 0.3),
+    });
+
+    // 8강 2경기 (2반 vs 6반)
+    matches.push({
+      id: m2Id,
+      sport: sport.id,
+      grade: 2,
+      matchNumber: 2,
+      bracketLabel: '② 8강 2경기',
+      round: '8강',
+      teamA: { name: '2학년 2반', grade: 2, classNum: 2 },
+      teamB: { name: '2학년 6반', grade: 2, classNum: 6 },
+      scoreA: 3,
+      scoreB: 0,
+      status: 'completed',
+      winnerTeam: 'teamA',
+      time: '10:00',
+      court,
+      pointsForWinner: Math.round(pts * 0.3),
+    });
+
+    // 8강 3경기 (3반 vs 5반)
+    matches.push({
+      id: m3Id,
+      sport: sport.id,
+      grade: 2,
+      matchNumber: 3,
+      bracketLabel: '③ 8강 3경기',
+      round: '8강',
+      teamA: { name: '2학년 3반', grade: 2, classNum: 3 },
+      teamB: { name: '2학년 5반', grade: 2, classNum: 5 },
+      scoreA: 1,
+      scoreB: 2,
+      status: 'completed',
+      winnerTeam: 'teamB',
+      time: '10:30',
+      court,
+      pointsForWinner: Math.round(pts * 0.3),
+    });
+
+    // 4강 1경기 (Winner ① 1반 vs Winner ② 2반)
+    matches.push({
+      id: m4Id,
+      sport: sport.id,
+      grade: 2,
+      matchNumber: 4,
+      bracketLabel: '④ 4강 1경기',
+      round: '4강',
+      teamA: { name: '2학년 1반', grade: 2, classNum: 1 },
+      teamB: { name: '2학년 2반', grade: 2, classNum: 2 },
+      scoreA: 1,
+      scoreB: 2,
+      status: 'in_progress',
+      time: '13:00',
+      court,
+      pointsForWinner: Math.round(pts * 0.5),
+      sourceMatchAId: m1Id,
+      sourceMatchBId: m2Id,
+    });
+
+    // 4강 2경기 (Winner ③ 5반 vs 4반 [부전승 진출])
+    matches.push({
+      id: m5Id,
+      sport: sport.id,
+      grade: 2,
+      matchNumber: 5,
+      bracketLabel: '⑤ 4강 2경기',
+      round: '4강',
+      teamA: { name: '2학년 5반', grade: 2, classNum: 5 },
+      teamB: { name: '2학년 4반 (부전승)', grade: 2, classNum: 4 },
+      scoreA: 0,
+      scoreB: 0,
+      status: 'scheduled',
+      time: '13:30',
+      court,
+      pointsForWinner: Math.round(pts * 0.5),
+      sourceMatchAId: m3Id,
+    });
+
+    // 결승전 (④ 승자 vs ⑤ 승자)
+    matches.push({
+      id: m6Id,
+      sport: sport.id,
+      grade: 2,
+      matchNumber: 6,
+      bracketLabel: '⑥ 결승전 (FINAL)',
+      round: '결승',
+      teamA: { name: '④ 4강 1경기 승자', grade: 2, classNum: 0 },
+      teamB: { name: '⑤ 4강 2경기 승자', grade: 2, classNum: 0 },
+      scoreA: 0,
+      scoreB: 0,
+      status: 'scheduled',
+      time: '15:10',
+      court,
+      pointsForWinner: pts,
+      sourceMatchAId: m4Id,
+      sourceMatchBId: m5Id,
+    });
+  });
+
+  return matches;
+}
+
+// 3학년 6학급 대진표 생성 (8강 2경기 -> 4강 2경기 -> 결승전)
+function generateGrade3Matches(): Match[] {
+  const matches: Match[] = [];
+  SPORT_CATEGORIES.forEach((sport) => {
+    const court = SPORT_COURTS[sport.id] || '체육관';
+    const pts = sport.totalPoints;
+    const base = `${sport.id}-g3`;
+
+    const m1Id = `${base}-m1`;
+    const m2Id = `${base}-m2`;
+    const m3Id = `${base}-m3`;
+    const m4Id = `${base}-m4`;
+    const m5Id = `${base}-m5`;
+
+    // 8강 1경기 (1반 vs 6반)
+    matches.push({
+      id: m1Id,
+      sport: sport.id,
+      grade: 3,
+      matchNumber: 1,
+      bracketLabel: '① 8강 1경기',
+      round: '8강',
+      teamA: { name: '3학년 1반', grade: 3, classNum: 1 },
+      teamB: { name: '3학년 6반', grade: 3, classNum: 6 },
+      scoreA: 3,
+      scoreB: 1,
+      status: 'completed',
+      winnerTeam: 'teamA',
+      time: '09:40',
+      court,
+      pointsForWinner: Math.round(pts * 0.3),
+    });
+
+    // 8강 2경기 (2반 vs 5반)
+    matches.push({
+      id: m2Id,
+      sport: sport.id,
+      grade: 3,
+      matchNumber: 2,
+      bracketLabel: '② 8강 2경기',
+      round: '8강',
+      teamA: { name: '3학년 2반', grade: 3, classNum: 2 },
+      teamB: { name: '3학년 5반', grade: 3, classNum: 5 },
+      scoreA: 2,
+      scoreB: 0,
+      status: 'completed',
+      winnerTeam: 'teamA',
+      time: '10:10',
+      court,
+      pointsForWinner: Math.round(pts * 0.3),
+    });
+
+    // 4강 1경기 (Winner ① 1반 vs 3반 [부전승 배정])
+    matches.push({
+      id: m3Id,
+      sport: sport.id,
+      grade: 3,
+      matchNumber: 3,
+      bracketLabel: '③ 4강 1경기',
+      round: '4강',
+      teamA: { name: '3학년 1반', grade: 3, classNum: 1 },
+      teamB: { name: '3학년 3반 (부전승)', grade: 3, classNum: 3 },
+      scoreA: 2,
+      scoreB: 1,
+      status: 'in_progress',
+      time: '13:20',
+      court,
+      pointsForWinner: Math.round(pts * 0.5),
+      sourceMatchAId: m1Id,
+    });
+
+    // 4강 2경기 (Winner ② 2반 vs 4반 [부전승 배정])
+    matches.push({
+      id: m4Id,
+      sport: sport.id,
+      grade: 3,
+      matchNumber: 4,
+      bracketLabel: '④ 4강 2경기',
+      round: '4강',
+      teamA: { name: '3학년 2반', grade: 3, classNum: 2 },
+      teamB: { name: '3학년 4반 (부전승)', grade: 3, classNum: 4 },
+      scoreA: 1,
+      scoreB: 2,
+      status: 'in_progress',
+      time: '13:50',
+      court,
+      pointsForWinner: Math.round(pts * 0.5),
+      sourceMatchAId: m2Id,
+    });
+
+    // 결승전 (③ 승자 vs ④ 승자)
+    matches.push({
+      id: m5Id,
+      sport: sport.id,
+      grade: 3,
+      matchNumber: 5,
+      bracketLabel: '⑤ 결승전 (FINAL)',
+      round: '결승',
+      teamA: { name: '③ 4강 1경기 승자', grade: 3, classNum: 0 },
+      teamB: { name: '④ 4강 2경기 승자', grade: 3, classNum: 0 },
+      scoreA: 0,
+      scoreB: 0,
+      status: 'scheduled',
+      time: '15:30',
+      court,
+      pointsForWinner: pts,
+      sourceMatchAId: m3Id,
+      sourceMatchBId: m4Id,
+    });
+  });
+
+  return matches;
+}
+
 export const INITIAL_MATCHES: Match[] = [
-  {
-    id: 'm-1',
-    sport: 'soccer',
-    round: '결승',
-    teamA: { name: '3학년 1반', grade: 3, classNum: 1 },
-    teamB: { name: '3학년 4반', grade: 3, classNum: 4 },
-    scoreA: 2,
-    scoreB: 1,
-    status: 'in_progress',
-    time: '14:30',
-    court: '중앙 대운동장 A코트',
-    pointsForWinner: 150,
-  },
-  {
-    id: 'm-2',
-    sport: 'futsal',
-    round: '결승',
-    teamA: { name: '2학년 2반', grade: 2, classNum: 2 },
-    teamB: { name: '2학년 7반', grade: 2, classNum: 7 },
-    scoreA: 4,
-    scoreB: 3,
-    status: 'in_progress',
-    time: '14:40',
-    court: '풋살 전용구장',
-    pointsForWinner: 120,
-  },
-  {
-    id: 'm-3',
-    sport: 'dodgeball',
-    round: '결승',
-    teamA: { name: '1학년 3반', grade: 1, classNum: 3 },
-    teamB: { name: '1학년 5반', grade: 1, classNum: 5 },
-    scoreA: 15,
-    scoreB: 8,
-    status: 'completed',
-    winnerTeam: 'teamA',
-    time: '13:00',
-    court: '보조 운동장 C구역',
-    pointsForWinner: 100,
-  },
-  {
-    id: 'm-4',
-    sport: 'relay',
-    round: '결승',
-    teamA: { name: '3학년 1반', grade: 3, classNum: 1 },
-    teamB: { name: '2학년 2반', grade: 2, classNum: 2 },
-    scoreA: 0,
-    scoreB: 0,
-    status: 'scheduled',
-    time: '16:00 (피날레)',
-    court: '중앙 트랙',
-    pointsForWinner: 200,
-  },
-  {
-    id: 'm-5',
-    sport: 'tug_of_war',
-    round: '결승',
-    teamA: { name: '2학년 5반', grade: 2, classNum: 5 },
-    teamB: { name: '3학년 1반', grade: 3, classNum: 1 },
-    scoreA: 0,
-    scoreB: 0,
-    status: 'scheduled',
-    time: '15:40',
-    court: '운동장 특설무대 앞',
-    pointsForWinner: 150,
-  },
-  {
-    id: 'm-6',
-    sport: 'three_legged',
-    round: '결승',
-    teamA: { name: '1학년 2반', grade: 1, classNum: 2 },
-    teamB: { name: '1학년 4반', grade: 1, classNum: 4 },
-    scoreA: 1,
-    scoreB: 0,
-    status: 'in_progress',
-    time: '14:00',
-    court: '중앙 트랙 잔디',
-    pointsForWinner: 100,
-  },
-  {
-    id: 'm-7',
-    sport: 'jump_rope',
-    round: '결승',
-    teamA: { name: '2학년 3반', grade: 2, classNum: 3 },
-    teamB: { name: '2학년 5반', grade: 2, classNum: 5 },
-    scoreA: 0,
-    scoreB: 0,
-    status: 'scheduled',
-    time: '15:20',
-    court: '체육관 메인홀',
-    pointsForWinner: 120,
-  },
-  {
-    id: 'm-8',
-    sport: 'ox_quiz',
-    round: '결승',
-    teamA: { name: '3학년 3반', grade: 3, classNum: 3 },
-    teamB: { name: '1학년 3반', grade: 1, classNum: 3 },
-    scoreA: 18,
-    scoreB: 15,
-    status: 'in_progress',
-    time: '14:15',
-    court: '대강당',
-    pointsForWinner: 80,
-  },
-  {
-    id: 'm-9',
-    sport: 'bottle_flip',
-    round: '결승',
-    teamA: { name: '2학년 6반', grade: 2, classNum: 6 },
-    teamB: { name: '3학년 5반', grade: 3, classNum: 5 },
-    scoreA: 10,
-    scoreB: 8,
-    status: 'completed',
-    winnerTeam: 'teamA',
-    time: '11:50',
-    court: '이벤트존 1구역',
-    pointsForWinner: 80,
-  },
-  {
-    id: 'm-10',
-    sport: 'jegichagi',
-    round: '결승',
-    teamA: { name: '3학년 6반', grade: 3, classNum: 6 },
-    teamB: { name: '3학년 2반', grade: 3, classNum: 2 },
-    scoreA: 35,
-    scoreB: 28,
-    status: 'completed',
-    winnerTeam: 'teamA',
-    time: '10:40',
-    court: '본관 앞 중앙광장',
-    pointsForWinner: 80,
-  },
-  {
-    id: 'm-11',
-    sport: 'disc_golf',
-    round: '결승',
-    teamA: { name: '2학년 4반', grade: 2, classNum: 4 },
-    teamB: { name: '1학년 5반', grade: 1, classNum: 5 },
-    scoreA: 12,
-    scoreB: 11,
-    status: 'in_progress',
-    time: '14:50',
-    court: '디스크골프 잔디존',
-    pointsForWinner: 100,
-  },
-  {
-    id: 'm-12',
-    sport: 'tug_of_war',
-    round: '4강',
-    teamA: { name: '2학년 5반', grade: 2, classNum: 5 },
-    teamB: { name: '2학년 1반', grade: 2, classNum: 1 },
-    scoreA: 2,
-    scoreB: 0,
-    status: 'completed',
-    winnerTeam: 'teamA',
-    time: '11:20',
-    court: '운동장 특설무대',
-    pointsForWinner: 100,
-  },
-  {
-    id: 'm-13',
-    sport: 'dodgeball',
-    round: '4강',
-    teamA: { name: '1학년 1반', grade: 1, classNum: 1 },
-    teamB: { name: '1학년 2반', grade: 1, classNum: 2 },
-    scoreA: 12,
-    scoreB: 10,
-    status: 'completed',
-    winnerTeam: 'teamA',
-    time: '10:00',
-    court: '보조 운동장 B구역',
-    pointsForWinner: 80,
-  },
+  ...generateGrade1Matches(),
+  ...generateGrade2Matches(),
+  ...generateGrade3Matches(),
 ];
+
 
 // 학년별 총점 (1학년 5팀, 2학년 7팀, 3학년 6팀)
 export const INITIAL_GRADE_SCORES: GradeScore[] = [

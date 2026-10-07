@@ -9,9 +9,9 @@ import {
 } from './mockData';
 import { addRankingScore } from './supabase';
 
-const STORAGE_KEY_MATCHES = 'museon_sports_matches_v3';
-const STORAGE_KEY_GRADES = 'museon_sports_grades_v3';
-const STORAGE_KEY_CLASSES = 'museon_sports_classes_v3';
+const STORAGE_KEY_MATCHES = 'museon_sports_matches_v4';
+const STORAGE_KEY_GRADES = 'museon_sports_grades_v4';
+const STORAGE_KEY_CLASSES = 'museon_sports_classes_v4';
 
 export function useSportsData() {
   const [matches, setMatches] = useState<Match[]>(INITIAL_MATCHES);
@@ -65,10 +65,14 @@ export function useSportsData() {
   const handleScoreUpdate = (matchId: string, team: 'A' | 'B', delta: number) => {
     const updatedMatches = matches.map((m) => {
       if (m.id !== matchId) return m;
+      const nextScoreA = team === 'A' ? Math.max(0, m.scoreA + delta) : m.scoreA;
+      const nextScoreB = team === 'B' ? Math.max(0, m.scoreB + delta) : m.scoreB;
+      const nextStatus = (m.status === 'scheduled' && (nextScoreA > 0 || nextScoreB > 0)) ? 'in_progress' : m.status;
       return {
         ...m,
-        scoreA: team === 'A' ? Math.max(0, m.scoreA + delta) : m.scoreA,
-        scoreB: team === 'B' ? Math.max(0, m.scoreB + delta) : m.scoreB,
+        scoreA: nextScoreA,
+        scoreB: nextScoreB,
+        status: nextStatus,
       };
     });
     setMatches(updatedMatches);
@@ -82,50 +86,128 @@ export function useSportsData() {
     const points = targetMatch.pointsForWinner || 100;
     const winningTeam = winner === 'teamA' ? targetMatch.teamA : targetMatch.teamB;
 
-    // 1. Update Match status
+    // 1. Update Match status & Propagate winner to downstream matches
     const updatedMatches = matches.map((m) => {
-      if (m.id !== matchId) return m;
-      return {
-        ...m,
-        status: 'completed' as const,
-        winnerTeam: winner,
-      };
-    });
-
-    // 2. Award points to Grade Score
-    const updatedGrades = gradeScores.map((gs) => {
-      if (gs.grade !== winningTeam.grade) return gs;
-      return {
-        ...gs,
-        totalScore: gs.totalScore + points,
-        goldMedals: gs.goldMedals + 1,
-      };
-    });
-
-    // 3. Award points to Class Ranking
-    const updatedClasses = classRankings.map((cr) => {
-      if (cr.grade === winningTeam.grade && cr.classNum === winningTeam.classNum) {
+      if (m.id === matchId) {
         return {
-          ...cr,
-          score: cr.score + points,
-          wins: cr.wins + 1,
+          ...m,
+          status: 'completed' as const,
+          winnerTeam: winner,
         };
       }
-      return cr;
+      let nextMatch = { ...m };
+      if (m.sourceMatchAId === matchId) {
+        nextMatch.teamA = winningTeam;
+        if (nextMatch.status === 'scheduled') nextMatch.status = 'in_progress';
+      }
+      if (m.sourceMatchBId === matchId) {
+        nextMatch.teamB = winningTeam;
+        if (nextMatch.status === 'scheduled') nextMatch.status = 'in_progress';
+      }
+      return nextMatch;
     });
 
-    // Re-sort and recalculate rank 1 to 18
-    updatedClasses.sort((a, b) => b.score - a.score);
-    const sortedClasses = updatedClasses.map((cr, idx) => ({ ...cr, rank: idx + 1 }));
+    // 2. Award points to Grade Score if valid class
+    let updatedGrades = gradeScores;
+    if (winningTeam.classNum > 0) {
+      updatedGrades = gradeScores.map((gs) => {
+        if (gs.grade !== winningTeam.grade) return gs;
+        return {
+          ...gs,
+          totalScore: gs.totalScore + points,
+          goldMedals: gs.goldMedals + 1,
+        };
+      });
+    }
+
+    // 3. Award points to Class Ranking if valid class
+    let updatedClasses = classRankings;
+    if (winningTeam.classNum > 0) {
+      updatedClasses = classRankings.map((cr) => {
+        if (cr.grade === winningTeam.grade && cr.classNum === winningTeam.classNum) {
+          return {
+            ...cr,
+            score: cr.score + points,
+            wins: cr.wins + 1,
+          };
+        }
+        return cr;
+      });
+
+      // Re-sort and recalculate rank 1 to 18
+      updatedClasses.sort((a, b) => b.score - a.score);
+      updatedClasses = updatedClasses.map((cr, idx) => ({ ...cr, rank: idx + 1 }));
+    }
 
     setMatches(updatedMatches);
     setGradeScores(updatedGrades);
-    setClassRankings(sortedClasses);
-    saveState(updatedMatches, updatedGrades, sortedClasses);
+    setClassRankings(updatedClasses);
+    saveState(updatedMatches, updatedGrades, updatedClasses);
 
     // Also register to Supabase rankings
-    const nickname = `${winningTeam.grade}학년 ${winningTeam.classNum}반`;
-    addRankingScore(nickname, points).catch(() => {});
+    if (winningTeam.classNum > 0) {
+      const nickname = `${winningTeam.grade}학년 ${winningTeam.classNum}반`;
+      addRankingScore(nickname, points).catch(() => {});
+    }
+  };
+
+  const handleCancelWinner = (matchId: string) => {
+    const targetMatch = matches.find((m) => m.id === matchId);
+    if (!targetMatch || targetMatch.status !== 'completed' || !targetMatch.winnerTeam) return;
+
+    const points = targetMatch.pointsForWinner || 100;
+    const prevWinningTeam = targetMatch.winnerTeam === 'teamA' ? targetMatch.teamA : targetMatch.teamB;
+
+    const updatedMatches = matches.map((m) => {
+      if (m.id === matchId) {
+        return {
+          ...m,
+          status: 'in_progress' as const,
+          winnerTeam: undefined,
+        };
+      }
+      let nextMatch = { ...m };
+      if (m.sourceMatchAId === matchId) {
+        nextMatch.teamA = { name: `${targetMatch.bracketLabel || '이전 경기'} 승자`, grade: targetMatch.grade || 1, classNum: 0 };
+      }
+      if (m.sourceMatchBId === matchId) {
+        nextMatch.teamB = { name: `${targetMatch.bracketLabel || '이전 경기'} 승자`, grade: targetMatch.grade || 1, classNum: 0 };
+      }
+      return nextMatch;
+    });
+
+    let updatedGrades = gradeScores;
+    if (prevWinningTeam.classNum > 0) {
+      updatedGrades = gradeScores.map((gs) => {
+        if (gs.grade !== prevWinningTeam.grade) return gs;
+        return {
+          ...gs,
+          totalScore: Math.max(0, gs.totalScore - points),
+          goldMedals: Math.max(0, gs.goldMedals - 1),
+        };
+      });
+    }
+
+    let updatedClasses = classRankings;
+    if (prevWinningTeam.classNum > 0) {
+      updatedClasses = classRankings.map((cr) => {
+        if (cr.grade === prevWinningTeam.grade && cr.classNum === prevWinningTeam.classNum) {
+          return {
+            ...cr,
+            score: Math.max(0, cr.score - points),
+            wins: Math.max(0, cr.wins - 1),
+          };
+        }
+        return cr;
+      });
+      updatedClasses.sort((a, b) => b.score - a.score);
+      updatedClasses = updatedClasses.map((cr, idx) => ({ ...cr, rank: idx + 1 }));
+    }
+
+    setMatches(updatedMatches);
+    setGradeScores(updatedGrades);
+    setClassRankings(updatedClasses);
+    saveState(updatedMatches, updatedGrades, updatedClasses);
   };
 
   const handleResetData = () => {
@@ -144,6 +226,7 @@ export function useSportsData() {
     isLoaded,
     handleScoreUpdate,
     handleFinishMatch,
+    handleCancelWinner,
     handleResetData,
   };
 }
