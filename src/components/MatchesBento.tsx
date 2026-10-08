@@ -27,6 +27,8 @@ import {
   calculateRankPoints,
   getRankPoints,
   getTournamentRoundPoints,
+  SPORT_COURTS,
+  getSportScheduleInfo,
 } from '../lib/mockData';
 import ScoreRulesModal from './ScoreRulesModal';
 
@@ -255,16 +257,19 @@ export default function MatchesBento({
           <div className="glass-card p-3.5 rounded-2xl border border-indigo-500/20 bg-indigo-500/5">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5">
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-600 dark:text-indigo-400">
                     <Trophy className="w-4 h-4" />
                   </span>
                   <h3 className="font-bold text-slate-900 dark:text-white text-sm">
                     {selectedGrade}학년 {getSportName(selectedSport)} - 토너먼트 공식 배점 기준
                   </h3>
+                  <span className="text-[11px] bg-indigo-600 text-white font-bold px-2.5 py-0.5 rounded-md flex items-center gap-1 shadow-xs">
+                    <MapPin className="w-3 h-3" /> {SPORT_COURTS[selectedSport] || '운동장/트랙'}
+                  </span>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  경기 결과에 따라 학년별 최종 순위 배점이 자동 결정됩니다 • 공식 배점 기준표 연동
+                  장소: {SPORT_COURTS[selectedSport] || '운동장/트랙'} • 공식 일정표 시간 연동 • 경기 결과에 따라 순위 배점 부여
                 </p>
               </div>
 
@@ -1253,6 +1258,7 @@ function SportRankingSection({
     .filter((e) => e.rank > 0)
     .sort((a, b) => a.rank - b.rank);
   const unrankedEntries = currentEntries.filter((e) => e.rank === 0);
+  const scheduleInfo = getSportScheduleInfo(sportId, grade);
 
   return (
     <div className="space-y-6">
@@ -1260,16 +1266,22 @@ function SportRankingSection({
       <div className="glass-card p-4 rounded-2xl border border-amber-500/20 bg-amber-500/5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="p-1.5 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400">
                 <Medal className="w-4 h-4" />
               </span>
               <h3 className="font-bold text-slate-900 dark:text-white text-sm">
                 {grade}학년 {sportName} - 순위제 기록 경기 & 포인트 산정
               </h3>
+              <span className="text-[11px] bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold px-2 py-0.5 rounded-md flex items-center gap-1 border border-amber-500/30">
+                <MapPin className="w-3 h-3" /> {scheduleInfo.venue}
+              </span>
+              <span className="text-[11px] bg-slate-200/80 dark:bg-slate-700/80 text-slate-700 dark:text-slate-300 font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
+                <Clock className="w-3 h-3" /> {scheduleInfo.time}
+              </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              {sport?.description} • 공식 배점 기준 자동 계산
+              장소: {scheduleInfo.venue} • 시간: {scheduleInfo.time} • 공식 배점 기준 자동 계산
             </p>
           </div>
 

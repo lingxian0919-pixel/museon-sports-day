@@ -30,20 +30,42 @@ export const SPORT_CATEGORIES: SportCategory[] = [
 ];
 
 
-// 종목별 코트 및 기본 설정
-const SPORT_COURTS: Record<string, string> = {
-  three_legged: '대운동장 트랙 잔디구역',
-  soccer: '중앙 대운동장 A코트',
-  dodgeball: '보조 체육관 B구역',
-  futsal: '풋살 전용구장',
-  jump_rope: '실내 체육관 메인홀',
-  tug_of_war: '운동장 특설무대 앞',
-  relay: '중앙 400m 정규 트랙',
-  ox_quiz: '대강당 특설무대',
-  bottle_flip: '이벤트존 1구역',
-  jegichagi: '본관 앞 중앙광장',
-  disc_golf: '디스크골프 잔디존',
+// 종목별 코트 및 기본 설정 (사용자 지정 3대 장소: '운동장/트랙', '체육관', '농구장')
+export const SPORT_COURTS: Record<string, string> = {
+  three_legged: '운동장/트랙',
+  soccer: '운동장/트랙',
+  dodgeball: '체육관',
+  futsal: '농구장',
+  jump_rope: '체육관',
+  tug_of_war: '운동장/트랙',
+  relay: '운동장/트랙',
+  ox_quiz: '운동장/트랙',
+  bottle_flip: '운동장/트랙',
+  jegichagi: '운동장/트랙',
+  disc_golf: '운동장/트랙',
 };
+
+// 순위제 및 종합 종목별 공식 진행 장소와 시간 정보 반환 함수
+export function getSportScheduleInfo(sportId: string, grade?: number): { venue: string; time: string } {
+  const venue = SPORT_COURTS[sportId] || '운동장/트랙';
+
+  if (sportId === 'three_legged') {
+    return { venue, time: '09:30 ~ 10:00 (전학년)' };
+  }
+  if (sportId === 'jump_rope') {
+    if (grade === 1) return { venue, time: '15:00 ~ 15:30 (1학년)' };
+    if (grade === 2) return { venue, time: '11:00 ~ 11:30 (2학년)' };
+    if (grade === 3) return { venue, time: '13:30 ~ 14:00 (3학년)' };
+    return { venue, time: '학년별 순차 진행 (체육관)' };
+  }
+  if (sportId === 'relay') {
+    return { venue, time: '15:30 ~ 16:00 (폐회 전)' };
+  }
+  if (sportId === 'ox_quiz') {
+    return { venue, time: '12:00 ~ 12:30 (점심 이벤트)' };
+  }
+  return { venue, time: '체육대회 일정표 기준 진행' };
+}
 
 // 종목별 공식 배점표 (1등 ~ 7등) - 사용자 업로드 기준표 정확 반영
 export const SPORT_RANK_POINTS_TABLE: Record<string, number[]> = {
@@ -194,6 +216,19 @@ function generateGrade1Matches(): Match[] {
       m1ScoreA = 1; m1ScoreB = 0;
     }
 
+    // 1학년 경기별 공식 시간표 매핑 (사용자 업로드 표 기준)
+    const g1MatchTimes: Record<string, { m1: string; m2: string; m3: string; m4: string }> = {
+      // 축구(운동장/트랙): ① 10:00 ~ 10:30, ② 10:30 ~ 11:00, ③ 13:30 ~ 14:00, ④ 09:00 ~ 09:30 (결승)
+      soccer: { m1: '10:00 ~ 10:30', m2: '10:30 ~ 11:00', m3: '13:30 ~ 14:00', m4: '09:00 ~ 09:30' },
+      // 풋살(농구장): ① 12:30 ~ 13:00, ② 13:00 ~ 13:30, ③ 13:30 ~ 14:00, ④ 09:00 ~ 09:30 (결승)
+      futsal: { m1: '12:30 ~ 13:00', m2: '13:00 ~ 13:30', m3: '13:30 ~ 14:00', m4: '09:00 ~ 09:30' },
+      // 피구(체육관): ① 14:00 ~ 14:30, ② 14:00 ~ 14:30, ③ 14:30 ~ 15:00, ④ 09:30 ~ 10:00 (결승)
+      dodgeball: { m1: '14:00 ~ 14:30', m2: '14:00 ~ 14:30', m3: '14:30 ~ 15:00', m4: '09:30 ~ 10:00' },
+      // 줄다리기(운동장/트랙): 트랙 전용 진행
+      tug_of_war: { m1: '10:30 ~ 11:00', m2: '11:00 ~ 11:30', m3: '13:30 ~ 14:00', m4: '10:30 ~ 11:00' },
+    };
+    const times = g1MatchTimes[sport.id] || { m1: '10:00 ~ 10:30', m2: '10:30 ~ 11:00', m3: '13:30 ~ 14:00', m4: '09:00 ~ 09:30' };
+
     // ① 예선
     matches.push({
       id: m1Id,
@@ -208,7 +243,7 @@ function generateGrade1Matches(): Match[] {
       scoreB: m1ScoreB,
       status: m1Status,
       winnerTeam: m1Winner,
-      time: '10:00',
+      time: times.m1,
       court,
       pointsForWinner: getTournamentRoundPoints(sport.id, '예선').points,
     });
@@ -227,7 +262,7 @@ function generateGrade1Matches(): Match[] {
       scoreB: m2ScoreB,
       status: m2Status,
       winnerTeam: m2Winner,
-      time: '11:00',
+      time: times.m2,
       court,
       pointsForWinner: getTournamentRoundPoints(sport.id, '4강').points,
     });
@@ -245,7 +280,7 @@ function generateGrade1Matches(): Match[] {
       scoreA: m3ScoreA,
       scoreB: m3ScoreB,
       status: m3Status,
-      time: '11:40',
+      time: times.m3,
       court,
       pointsForWinner: getTournamentRoundPoints(sport.id, '4강').points,
       sourceMatchAId: m1Id,
@@ -264,7 +299,7 @@ function generateGrade1Matches(): Match[] {
       scoreA: m4ScoreA,
       scoreB: m4ScoreB,
       status: m4Status,
-      time: '14:30',
+      time: times.m4,
       court,
       pointsForWinner: getTournamentRoundPoints(sport.id, '결승').points,
       sourceMatchAId: m2Id,
@@ -406,6 +441,54 @@ function generateGrade2Matches(): Match[] {
       mcScoreA = 1; mcScoreB = 0;
     }
 
+    // 2학년 경기별 공식 시간표 매핑 (사용자 업로드 표 기준)
+    const g2MatchTimes: Record<string, { mc: string; mb: string; ma: string; me: string; md: string; mf: string }> = {
+      // 축구(운동장/트랙): ⓒ 09:30~10:00, ⓑ 10:00~10:30, ⓐ 10:30~11:00, ⓔ 12:30~13:00, ⓓ 13:00~13:30, ⓕ 10:00~10:30 (결승)
+      soccer: {
+        mc: '09:30 ~ 10:00',
+        mb: '10:00 ~ 10:30',
+        ma: '10:30 ~ 11:00',
+        me: '12:30 ~ 13:00',
+        md: '13:00 ~ 13:30',
+        mf: '10:00 ~ 10:30',
+      },
+      // 풋살(농구장): ⓒ 10:00~10:30, ⓑ 10:30~11:00, ⓐ 11:00~11:30, ⓓ 14:00~14:30, ⓔ 14:30~15:00, ⓕ 10:00~10:30 (결승)
+      futsal: {
+        mc: '10:00 ~ 10:30',
+        mb: '10:30 ~ 11:00',
+        ma: '11:00 ~ 11:30',
+        me: '14:30 ~ 15:00',
+        md: '14:00 ~ 14:30',
+        mf: '10:00 ~ 10:30',
+      },
+      // 피구(체육관): ⓐ, ⓑ 10:00~10:30 / ⓒ, ⓓ 10:30~11:00 / ⓔ 09:00~09:30 / ⓕ 09:30~10:00 (결승)
+      dodgeball: {
+        mc: '10:30 ~ 11:00',
+        mb: '10:00 ~ 10:30',
+        ma: '10:00 ~ 10:30',
+        me: '09:00 ~ 09:30',
+        md: '10:30 ~ 11:00',
+        mf: '09:30 ~ 10:00',
+      },
+      // 줄다리기(운동장/트랙): 트랙 전용 진행
+      tug_of_war: {
+        mc: '11:00 ~ 11:30',
+        mb: '11:30 ~ 12:00',
+        ma: '12:30 ~ 13:00',
+        me: '13:30 ~ 14:00',
+        md: '14:00 ~ 14:30',
+        mf: '10:30 ~ 11:00',
+      },
+    };
+    const times = g2MatchTimes[sport.id] || {
+      mc: '09:30 ~ 10:00',
+      mb: '10:00 ~ 10:30',
+      ma: '10:30 ~ 11:00',
+      me: '12:30 ~ 13:00',
+      md: '13:00 ~ 13:30',
+      mf: '10:00 ~ 10:30',
+    };
+
     // ⓒ 8강 1경기 (mc)
     matches.push({
       id: mcId,
@@ -421,7 +504,7 @@ function generateGrade2Matches(): Match[] {
       scoreB: mcScoreB,
       status: mcStatus,
       winnerTeam: mcWinner,
-      time: '09:30',
+      time: times.mc,
       court,
       pointsForWinner: getTournamentRoundPoints(sport.id, '8강').points,
     });
@@ -441,7 +524,7 @@ function generateGrade2Matches(): Match[] {
       scoreB: mbScoreB,
       status: mbStatus,
       winnerTeam: mbWinner,
-      time: '10:00',
+      time: times.mb,
       court,
       pointsForWinner: getTournamentRoundPoints(sport.id, '8강').points,
     });
@@ -461,7 +544,7 @@ function generateGrade2Matches(): Match[] {
       scoreB: maScoreB,
       status: maStatus,
       winnerTeam: maWinner,
-      time: '10:30',
+      time: times.ma,
       court,
       pointsForWinner: getTournamentRoundPoints(sport.id, '8강').points,
     });
@@ -481,7 +564,7 @@ function generateGrade2Matches(): Match[] {
       scoreB: meScoreB,
       status: meStatus,
       winnerTeam: meWinner,
-      time: '13:00',
+      time: times.me,
       court,
       pointsForWinner: getTournamentRoundPoints(sport.id, '4강').points,
       sourceMatchAId: mcId,
@@ -502,7 +585,7 @@ function generateGrade2Matches(): Match[] {
       scoreA: mdScoreA,
       scoreB: mdScoreB,
       status: mdStatus,
-      time: '13:30',
+      time: times.md,
       court,
       pointsForWinner: getTournamentRoundPoints(sport.id, '4강').points,
       sourceMatchAId: maId,
@@ -522,7 +605,7 @@ function generateGrade2Matches(): Match[] {
       scoreA: mfScoreA,
       scoreB: mfScoreB,
       status: mfStatus,
-      time: '15:10',
+      time: times.mf,
       court,
       pointsForWinner: getTournamentRoundPoints(sport.id, '결승').points,
       sourceMatchAId: meId,
@@ -651,6 +734,49 @@ function generateGrade3Matches(): Match[] {
       mcScoreA = 1; mcScoreB = 0;
     }
 
+    // 3학년 경기별 공식 시간표 매핑 (사용자 업로드 표 기준)
+    const g3MatchTimes: Record<string, { mb: string; ma: string; mc: string; md: string; me: string }> = {
+      // 축구(운동장/트랙): ㉡ 11:00~11:30, ㉠ 14:00~14:30, ㉢ 14:30~15:00, ㉣ 15:00~15:30, ㉤ 09:30~10:00 (결승)
+      soccer: {
+        mb: '11:00 ~ 11:30',
+        ma: '14:00 ~ 14:30',
+        mc: '14:30 ~ 15:00',
+        md: '15:00 ~ 15:30',
+        me: '09:30 ~ 10:00',
+      },
+      // 풋살(농구장): ㉠ 10:00~10:30, ㉡ 10:30~11:00, ㉢ 11:00~11:30, ㉣ 15:00~15:30, ㉤ 09:30~10:00 (결승)
+      futsal: {
+        mb: '10:30 ~ 11:00',
+        ma: '10:00 ~ 10:30',
+        mc: '11:00 ~ 11:30',
+        md: '15:00 ~ 15:30',
+        me: '09:30 ~ 10:00',
+      },
+      // 피구(체육관): ㉠, ㉡ 12:30~13:00 / ㉢ 13:00~13:30 / ㉣ 09:00~09:30 / ㉤ 10:00~10:30 (결승)
+      dodgeball: {
+        mb: '12:30 ~ 13:00',
+        ma: '12:30 ~ 13:00',
+        mc: '13:00 ~ 13:30',
+        md: '09:00 ~ 09:30',
+        me: '10:00 ~ 10:30',
+      },
+      // 줄다리기(운동장/트랙): 트랙 전용 진행
+      tug_of_war: {
+        mb: '11:00 ~ 11:30',
+        ma: '11:30 ~ 12:00',
+        mc: '13:00 ~ 13:30',
+        md: '13:30 ~ 14:00',
+        me: '10:30 ~ 11:00',
+      },
+    };
+    const times = g3MatchTimes[sport.id] || {
+      mb: '11:00 ~ 11:30',
+      ma: '14:00 ~ 14:30',
+      mc: '14:30 ~ 15:00',
+      md: '15:00 ~ 15:30',
+      me: '09:30 ~ 10:00',
+    };
+
     // ㉡ 8강 1경기 (mb)
     matches.push({
       id: mbId,
@@ -666,7 +792,7 @@ function generateGrade3Matches(): Match[] {
       scoreB: mbScoreB,
       status: mbStatus,
       winnerTeam: mbWinner,
-      time: '09:40',
+      time: times.mb,
       court,
       pointsForWinner: getTournamentRoundPoints(sport.id, '8강').points,
     });
@@ -686,7 +812,7 @@ function generateGrade3Matches(): Match[] {
       scoreB: maScoreB,
       status: maStatus,
       winnerTeam: maWinner,
-      time: '10:10',
+      time: times.ma,
       court,
       pointsForWinner: getTournamentRoundPoints(sport.id, '8강').points,
     });
@@ -706,7 +832,7 @@ function generateGrade3Matches(): Match[] {
       scoreB: mcScoreB,
       status: mcStatus,
       winnerTeam: mcWinner,
-      time: '13:00',
+      time: times.mc,
       court,
       pointsForWinner: getTournamentRoundPoints(sport.id, '4강').points,
     });
@@ -725,7 +851,7 @@ function generateGrade3Matches(): Match[] {
       scoreA: mdScoreA,
       scoreB: mdScoreB,
       status: mdStatus,
-      time: '13:40',
+      time: times.md,
       court,
       pointsForWinner: getTournamentRoundPoints(sport.id, '4강').points,
       sourceMatchAId: mbId,
@@ -746,7 +872,7 @@ function generateGrade3Matches(): Match[] {
       scoreA: meScoreA,
       scoreB: meScoreB,
       status: meStatus,
-      time: '15:20',
+      time: times.me,
       court,
       pointsForWinner: getTournamentRoundPoints(sport.id, '결승').points,
       sourceMatchAId: mcId,
