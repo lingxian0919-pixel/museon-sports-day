@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import ScoreHero from '../components/ScoreHero';
 import MatchesBento from '../components/MatchesBento';
-import CheeringBoardBento from '../components/CheeringBoardBento';
+import ClassSportScoreMatrix from '../components/ClassSportScoreMatrix';
 import TournamentBracketModal from '../components/TournamentBracketModal';
 import ScoreRulesModal from '../components/ScoreRulesModal';
 import { useSportsData } from '../lib/useSportsData';
@@ -82,9 +82,13 @@ export default function StudentViewerPage() {
         />
       </div>
 
-      {/* Cheering Community Board (Supabase posts) */}
+      {/* Real-time Sport Points Matrix Table per Class */}
       <div className="mb-8">
-        <CheeringBoardBento />
+        <ClassSportScoreMatrix
+          matches={matches}
+          sportRankings={sportRankings}
+          isScorerMode={false}
+        />
       </div>
 
       {/* Footer */}

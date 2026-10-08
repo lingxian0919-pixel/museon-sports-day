@@ -134,7 +134,7 @@ export function calculateRankPoints(sportIdOrPoints: string | number, rank: numb
 }
 
 // 1학년 5학급 전용 대진표 생성 (사용자 지정 대진표 반영)
-function generateGrade1Matches(): Match[] {
+function generateGrade1Matches(isClean = false): Match[] {
   // 사용자 제공 이미지(media_1791379320127.png)의 1학년 5개반 정확한 대진표
   const customG1Seeds: Record<string, { m1A: number; m1B: number; m2A: number; m2B: number; m3B: number }> = {
     soccer: { m1A: 1, m1B: 5, m2A: 4, m2B: 3, m3B: 2 }, // 축구(남): ① 1 vs 5, ② 4 vs 3, ③ ①승자 vs 2, ④ ②승자 vs ③승자
@@ -184,36 +184,38 @@ function generateGrade1Matches(): Match[] {
     let m4TeamA = { name: '② 4강 1경기 승자', grade: 1, classNum: 0 };
     let m4TeamB = { name: '③ 4강 2경기 승자', grade: 1, classNum: 0 };
 
-    if (sport.id === 'soccer') {
-      // 축구: ① 예선 종료(1반 승), ② 4강 진행중(4반 vs 3반 1:1), ③ 4강 진행중(1반 vs 2반 1:0)
-      m1Status = 'completed';
-      m1ScoreA = 2; m1ScoreB = 1;
-      m1Winner = 'teamA';
-      m2Status = 'in_progress';
-      m2ScoreA = 1; m2ScoreB = 1;
-      m3Status = 'in_progress';
-      m3TeamA = { name: `1학년 ${seed.m1A}반`, grade: 1, classNum: seed.m1A };
-      m3ScoreA = 1; m3ScoreB = 0;
-    } else if (sport.id === 'futsal') {
-      // 풋살: ① 예선 종료(4반 승), ② 4강 진행중(5반 vs 3반 3:2), ③ 4강 예정(4반 vs 2반)
-      m1Status = 'completed';
-      m1ScoreA = 3; m1ScoreB = 2;
-      m1Winner = 'teamA';
-      m2Status = 'in_progress';
-      m2ScoreA = 3; m2ScoreB = 2;
-      m3TeamA = { name: `1학년 ${seed.m1A}반`, grade: 1, classNum: seed.m1A };
-    } else if (sport.id === 'dodgeball') {
-      // 피구: ① 예선 진행중(4반 vs 5반 14:12), ② 4강 종료(1반 승 15:8)
-      m1Status = 'in_progress';
-      m1ScoreA = 14; m1ScoreB = 12;
-      m2Status = 'completed';
-      m2ScoreA = 15; m2ScoreB = 8;
-      m2Winner = 'teamA';
-      m4TeamA = { name: `1학년 ${seed.m2A}반`, grade: 1, classNum: seed.m2A };
-    } else if (sport.id === 'tug_of_war') {
-      // 줄다리기: ① 예선 진행중(5반 vs 2반 1:0)
-      m1Status = 'in_progress';
-      m1ScoreA = 1; m1ScoreB = 0;
+    if (!isClean) {
+      if (sport.id === 'soccer') {
+        // 축구: ① 예선 종료(1반 승), ② 4강 진행중(4반 vs 3반 1:1), ③ 4강 진행중(1반 vs 2반 1:0)
+        m1Status = 'completed';
+        m1ScoreA = 2; m1ScoreB = 1;
+        m1Winner = 'teamA';
+        m2Status = 'in_progress';
+        m2ScoreA = 1; m2ScoreB = 1;
+        m3Status = 'in_progress';
+        m3TeamA = { name: `1학년 ${seed.m1A}반`, grade: 1, classNum: seed.m1A };
+        m3ScoreA = 1; m3ScoreB = 0;
+      } else if (sport.id === 'futsal') {
+        // 풋살: ① 예선 종료(4반 승), ② 4강 진행중(5반 vs 3반 3:2), ③ 4강 예정(4반 vs 2반)
+        m1Status = 'completed';
+        m1ScoreA = 3; m1ScoreB = 2;
+        m1Winner = 'teamA';
+        m2Status = 'in_progress';
+        m2ScoreA = 3; m2ScoreB = 2;
+        m3TeamA = { name: `1학년 ${seed.m1A}반`, grade: 1, classNum: seed.m1A };
+      } else if (sport.id === 'dodgeball') {
+        // 피구: ① 예선 진행중(4반 vs 5반 14:12), ② 4강 종료(1반 승 15:8)
+        m1Status = 'in_progress';
+        m1ScoreA = 14; m1ScoreB = 12;
+        m2Status = 'completed';
+        m2ScoreA = 15; m2ScoreB = 8;
+        m2Winner = 'teamA';
+        m4TeamA = { name: `1학년 ${seed.m2A}반`, grade: 1, classNum: seed.m2A };
+      } else if (sport.id === 'tug_of_war') {
+        // 줄다리기: ① 예선 진행중(5반 vs 2반 1:0)
+        m1Status = 'in_progress';
+        m1ScoreA = 1; m1ScoreB = 0;
+      }
     }
 
     // 1학년 경기별 공식 시간표 매핑 (사용자 업로드 표 기준)
@@ -312,7 +314,7 @@ function generateGrade1Matches(): Match[] {
 
 // 2학년 7학급 대진표 생성 (사용자 제공 도면 media_1791380819346.png 반영)
 // 구조: ⓒ, ⓑ, ⓐ -> ⓔ(ⓒ승자 vs ⓑ승자), ⓓ(ⓐ승자 vs 부전승팀) -> ⓕ(ⓔ승자 vs ⓓ승자)
-function generateGrade2Matches(): Match[] {
+function generateGrade2Matches(isClean = false): Match[] {
   const customG2Seeds: Record<
     string,
     { mcA: number; mcB: number; mbA: number; mbB: number; maA: number; maB: number; bye: number }
@@ -380,65 +382,67 @@ function generateGrade2Matches(): Match[] {
     let mfTeamA = { name: 'ⓔ 4강 1경기 승자', grade: 2, classNum: 0 };
     let mfTeamB = { name: 'ⓓ 4강 2경기 승자', grade: 2, classNum: 0 };
 
-    if (sport.id === 'soccer') {
-      // 축구: ⓒ 종료(1반 승), ⓑ 진행중(4반 vs 2반), ⓐ 종료(3반 승), ⓓ 진행중(3반 vs 5반)
-      mcStatus = 'completed';
-      mcScoreA = 1; mcScoreB = 2;
-      mcWinner = 'teamB';
-      meTeamA = { name: `2학년 ${seed.mcB}반`, grade: 2, classNum: seed.mcB };
+    if (!isClean) {
+      if (sport.id === 'soccer') {
+        // 축구: ⓒ 종료(1반 승), ⓑ 진행중(4반 vs 2반), ⓐ 종료(3반 승), ⓓ 진행중(3반 vs 5반)
+        mcStatus = 'completed';
+        mcScoreA = 1; mcScoreB = 2;
+        mcWinner = 'teamB';
+        meTeamA = { name: `2학년 ${seed.mcB}반`, grade: 2, classNum: seed.mcB };
 
-      mbStatus = 'in_progress';
-      mbScoreA = 2; mbScoreB = 1;
+        mbStatus = 'in_progress';
+        mbScoreA = 2; mbScoreB = 1;
 
-      maStatus = 'completed';
-      maScoreA = 3; maScoreB = 1;
-      maWinner = 'teamA';
-      mdTeamA = { name: `2학년 ${seed.maA}반`, grade: 2, classNum: seed.maA };
+        maStatus = 'completed';
+        maScoreA = 3; maScoreB = 1;
+        maWinner = 'teamA';
+        mdTeamA = { name: `2학년 ${seed.maA}반`, grade: 2, classNum: seed.maA };
 
-      meStatus = 'in_progress';
+        meStatus = 'in_progress';
 
-      mdStatus = 'in_progress';
-      mdScoreA = 1; mdScoreB = 0;
-    } else if (sport.id === 'futsal') {
-      // 풋살: ⓒ 종료(6반 승), ⓑ 종료(2반 승), ⓐ 진행중(1반 vs 4반), ⓔ 진행중(6반 vs 2반)
-      mcStatus = 'completed';
-      mcScoreA = 3; mcScoreB = 2;
-      mcWinner = 'teamA';
-      meTeamA = { name: `2학년 ${seed.mcA}반`, grade: 2, classNum: seed.mcA };
+        mdStatus = 'in_progress';
+        mdScoreA = 1; mdScoreB = 0;
+      } else if (sport.id === 'futsal') {
+        // 풋살: ⓒ 종료(6반 승), ⓑ 종료(2반 승), ⓐ 진행중(1반 vs 4반), ⓔ 진행중(6반 vs 2반)
+        mcStatus = 'completed';
+        mcScoreA = 3; mcScoreB = 2;
+        mcWinner = 'teamA';
+        meTeamA = { name: `2학년 ${seed.mcA}반`, grade: 2, classNum: seed.mcA };
 
-      mbStatus = 'completed';
-      mbScoreA = 1; mbScoreB = 2;
-      mbWinner = 'teamB';
-      meTeamB = { name: `2학년 ${seed.mbB}반`, grade: 2, classNum: seed.mbB };
+        mbStatus = 'completed';
+        mbScoreA = 1; mbScoreB = 2;
+        mbWinner = 'teamB';
+        meTeamB = { name: `2학년 ${seed.mbB}반`, grade: 2, classNum: seed.mbB };
 
-      maStatus = 'in_progress';
-      maScoreA = 2; maScoreB = 2;
+        maStatus = 'in_progress';
+        maScoreA = 2; maScoreB = 2;
 
-      meStatus = 'in_progress';
-      meScoreA = 1; meScoreB = 1;
-    } else if (sport.id === 'dodgeball') {
-      // 피구: ⓒ 종료(1반 승), ⓑ 진행중(5반 vs 7반), ⓐ 종료(2반 승), ⓓ 진행중(2반 vs 6반)
-      mcStatus = 'completed';
-      mcScoreA = 12; mcScoreB = 10;
-      mcWinner = 'teamA';
-      meTeamA = { name: `2학년 ${seed.mcA}반`, grade: 2, classNum: seed.mcA };
+        meStatus = 'in_progress';
+        meScoreA = 1; meScoreB = 1;
+      } else if (sport.id === 'dodgeball') {
+        // 피구: ⓒ 종료(1반 승), ⓑ 진행중(5반 vs 7반), ⓐ 종료(2반 승), ⓓ 진행중(2반 vs 6반)
+        mcStatus = 'completed';
+        mcScoreA = 12; mcScoreB = 10;
+        mcWinner = 'teamA';
+        meTeamA = { name: `2학년 ${seed.mcA}반`, grade: 2, classNum: seed.mcA };
 
-      mbStatus = 'in_progress';
-      mbScoreA = 11; mbScoreB = 11;
+        mbStatus = 'in_progress';
+        mbScoreA = 11; mbScoreB = 11;
 
-      maStatus = 'completed';
-      maScoreA = 15; maScoreB = 11;
-      maWinner = 'teamA';
-      mdTeamA = { name: `2학년 ${seed.maA}반`, grade: 2, classNum: seed.maA };
+        maStatus = 'completed';
+        maScoreA = 15; maScoreB = 11;
+        maWinner = 'teamA';
+        mdTeamA = { name: `2학년 ${seed.maA}반`, grade: 2, classNum: seed.maA };
 
-      meStatus = 'in_progress';
+        meStatus = 'in_progress';
 
-      mdStatus = 'in_progress';
-      mdScoreA = 14; mdScoreB = 10;
-    } else if (sport.id === 'tug_of_war') {
-      // 줄다리기: ⓒ 진행중(2반 vs 4반 1:0)
-      mcStatus = 'in_progress';
-      mcScoreA = 1; mcScoreB = 0;
+        mdStatus = 'in_progress';
+        mdScoreA = 14; mdScoreB = 10;
+      } else if (sport.id === 'tug_of_war') {
+        // 줄다리기: ⓒ 진행중(2반 vs 4반 1:0)
+        mcStatus = 'in_progress';
+        mcScoreA = 1; mcScoreB = 0;
+      }
     }
 
     // 2학년 경기별 공식 시간표 매핑 (사용자 업로드 표 기준)
@@ -620,7 +624,7 @@ function generateGrade2Matches(): Match[] {
 // ㉢: 좌측 4강 1경기 (승자가 결승 ㉤ 직행)
 // ㉡: 우측 8강 1경기, ㉠: 우측 8강 2경기 -> ㉣: 우측 4강 2경기 (㉡승자 vs ㉠승자)
 // ㉤: 결승전 (㉢승자 vs ㉣승자)
-function generateGrade3Matches(): Match[] {
+function generateGrade3Matches(isClean = false): Match[] {
   const customG3Seeds: Record<
     string,
     { mcA: number; mcB: number; mbA: number; mbB: number; maA: number; maB: number }
@@ -682,56 +686,58 @@ function generateGrade3Matches(): Match[] {
     let meTeamA = { name: '㉢ 4강 1경기 승자', grade: 3, classNum: 0 };
     let meTeamB = { name: '㉣ 4강 2경기 승자', grade: 3, classNum: 0 };
 
-    if (sport.id === 'soccer') {
-      // 축구: ㉢ 진행중(4반 vs 2반 2:1), ㉡ 종료(1반 승), ㉠ 종료(6반 승), ㉣ 진행중(1반 vs 6반 1:0)
-      mcStatus = 'in_progress';
-      mcScoreA = 2; mcScoreB = 1;
+    if (!isClean) {
+      if (sport.id === 'soccer') {
+        // 축구: ㉢ 진행중(4반 vs 2반 2:1), ㉡ 종료(1반 승), ㉠ 종료(6반 승), ㉣ 진행중(1반 vs 6반 1:0)
+        mcStatus = 'in_progress';
+        mcScoreA = 2; mcScoreB = 1;
 
-      mbStatus = 'completed';
-      mbScoreA = 3; mbScoreB = 1;
-      mbWinner = 'teamA';
-      mdTeamA = { name: `3학년 ${seed.mbA}반`, grade: 3, classNum: seed.mbA };
+        mbStatus = 'completed';
+        mbScoreA = 3; mbScoreB = 1;
+        mbWinner = 'teamA';
+        mdTeamA = { name: `3학년 ${seed.mbA}반`, grade: 3, classNum: seed.mbA };
 
-      maStatus = 'completed';
-      maScoreA = 2; maScoreB = 1;
-      maWinner = 'teamA';
-      mdTeamB = { name: `3학년 ${seed.maA}반`, grade: 3, classNum: seed.maA };
+        maStatus = 'completed';
+        maScoreA = 2; maScoreB = 1;
+        maWinner = 'teamA';
+        mdTeamB = { name: `3학년 ${seed.maA}반`, grade: 3, classNum: seed.maA };
 
-      mdStatus = 'in_progress';
-      mdScoreA = 1; mdScoreB = 0;
-    } else if (sport.id === 'futsal') {
-      // 풋살: ㉢ 종료(6반 승), ㉡ 진행중(4반 vs 3반 2:2), ㉠ 종료(1반 승)
-      mcStatus = 'completed';
-      mcScoreA = 3; mcScoreB = 1;
-      mcWinner = 'teamA';
-      meTeamA = { name: `3학년 ${seed.mcA}반`, grade: 3, classNum: seed.mcA };
+        mdStatus = 'in_progress';
+        mdScoreA = 1; mdScoreB = 0;
+      } else if (sport.id === 'futsal') {
+        // 풋살: ㉢ 종료(6반 승), ㉡ 진행중(4반 vs 3반 2:2), ㉠ 종료(1반 승)
+        mcStatus = 'completed';
+        mcScoreA = 3; mcScoreB = 1;
+        mcWinner = 'teamA';
+        meTeamA = { name: `3학년 ${seed.mcA}반`, grade: 3, classNum: seed.mcA };
 
-      mbStatus = 'in_progress';
-      mbScoreA = 2; mbScoreB = 2;
+        mbStatus = 'in_progress';
+        mbScoreA = 2; mbScoreB = 2;
 
-      maStatus = 'completed';
-      maScoreA = 4; maScoreB = 2;
-      maWinner = 'teamA';
-      mdTeamB = { name: `3학년 ${seed.maA}반`, grade: 3, classNum: seed.maA };
-    } else if (sport.id === 'dodgeball') {
-      // 피구: ㉢ 종료(4반 승), ㉡ 종료(6반 승), ㉠ 진행중(3반 vs 1반 11:10)
-      mcStatus = 'completed';
-      mcScoreA = 15; mcScoreB = 12;
-      mcWinner = 'teamA';
-      meTeamA = { name: `3학년 ${seed.mcA}반`, grade: 3, classNum: seed.mcA };
+        maStatus = 'completed';
+        maScoreA = 4; maScoreB = 2;
+        maWinner = 'teamA';
+        mdTeamB = { name: `3학년 ${seed.maA}반`, grade: 3, classNum: seed.maA };
+      } else if (sport.id === 'dodgeball') {
+        // 피구: ㉢ 종료(4반 승), ㉡ 종료(6반 승), ㉠ 진행중(3반 vs 1반 11:10)
+        mcStatus = 'completed';
+        mcScoreA = 15; mcScoreB = 12;
+        mcWinner = 'teamA';
+        meTeamA = { name: `3학년 ${seed.mcA}반`, grade: 3, classNum: seed.mcA };
 
-      mbStatus = 'completed';
-      mbScoreA = 14; mbScoreB = 10;
-      mbWinner = 'teamA';
-      mdTeamA = { name: `3학년 ${seed.mbA}반`, grade: 3, classNum: seed.mbA };
+        mbStatus = 'completed';
+        mbScoreA = 14; mbScoreB = 10;
+        mbWinner = 'teamA';
+        mdTeamA = { name: `3학년 ${seed.mbA}반`, grade: 3, classNum: seed.mbA };
 
-      maStatus = 'in_progress';
-      maScoreA = 11; maScoreB = 10;
-      mdStatus = 'in_progress';
-    } else if (sport.id === 'tug_of_war') {
-      // 줄다리기: ㉢ 진행중(4반 vs 2반 1:0)
-      mcStatus = 'in_progress';
-      mcScoreA = 1; mcScoreB = 0;
+        maStatus = 'in_progress';
+        maScoreA = 11; maScoreB = 10;
+        mdStatus = 'in_progress';
+      } else if (sport.id === 'tug_of_war') {
+        // 줄다리기: ㉢ 진행중(4반 vs 2반 1:0)
+        mcStatus = 'in_progress';
+        mcScoreA = 1; mcScoreB = 0;
+      }
     }
 
     // 3학년 경기별 공식 시간표 매핑 (사용자 업로드 표 기준)
@@ -883,11 +889,20 @@ function generateGrade3Matches(): Match[] {
   return matches;
 }
 
+export function generateCleanMatches(): Match[] {
+  return [
+    ...generateGrade1Matches(true),
+    ...generateGrade2Matches(true),
+    ...generateGrade3Matches(true),
+  ];
+}
+
 export const INITIAL_MATCHES: Match[] = [
   ...generateGrade1Matches(),
   ...generateGrade2Matches(),
   ...generateGrade3Matches(),
 ];
+
 
 
 
@@ -981,9 +996,42 @@ export function generateInitialSportRankings(): SportRankingEntry[] {
   return rankings;
 }
 
+export function generateCleanSportRankings(): SportRankingEntry[] {
+  const rankings: SportRankingEntry[] = [];
+  const grades = [
+    { grade: 1, classCount: 5 },
+    { grade: 2, classCount: 7 },
+    { grade: 3, classCount: 6 },
+  ];
+
+  RANKING_SPORT_IDS.forEach((sportId) => {
+    grades.forEach(({ grade, classCount }) => {
+      for (let c = 1; c <= classCount; c++) {
+        rankings.push({
+          id: `${sportId}-g${grade}-c${c}`,
+          sportId,
+          grade,
+          classNum: c,
+          rank: 0,
+          record: '',
+          points: 0,
+        });
+      }
+    });
+  });
+
+  return rankings;
+}
+
 export const INITIAL_SPORT_RANKINGS: SportRankingEntry[] = generateInitialSportRankings();
 
-
+export function generateCleanGradeScores(): GradeScore[] {
+  return [
+    { grade: 1, totalScore: 0, goldMedals: 0, silverMedals: 0, bronzeMedals: 0, classesCount: 5 },
+    { grade: 2, totalScore: 0, goldMedals: 0, silverMedals: 0, bronzeMedals: 0, classesCount: 7 },
+    { grade: 3, totalScore: 0, goldMedals: 0, silverMedals: 0, bronzeMedals: 0, classesCount: 6 },
+  ];
+}
 
 // 학년별 총점 (1학년 5팀, 2학년 7팀, 3학년 6팀)
 export const INITIAL_GRADE_SCORES: GradeScore[] = [
@@ -991,6 +1039,30 @@ export const INITIAL_GRADE_SCORES: GradeScore[] = [
   { grade: 2, totalScore: 1470, goldMedals: 3, silverMedals: 3, bronzeMedals: 3, classesCount: 7 },
   { grade: 3, totalScore: 1430, goldMedals: 4, silverMedals: 3, bronzeMedals: 2, classesCount: 6 },
 ];
+
+export function generateCleanClassRankings(): ClassRanking[] {
+  const rankings: ClassRanking[] = [];
+  const grades = [
+    { grade: 1, count: 5 },
+    { grade: 2, count: 7 },
+    { grade: 3, count: 6 },
+  ];
+  let rank = 1;
+  grades.forEach(({ grade, count }) => {
+    for (let c = 1; c <= count; c++) {
+      rankings.push({
+        rank,
+        grade,
+        classNum: c,
+        score: 0,
+        wins: 0,
+        losses: 0,
+      });
+      rank++;
+    }
+  });
+  return rankings;
+}
 
 // 총 18개 학급 종합 순위표 (1학년 1~5반, 2학년 1~7반, 3학년 1~6반)
 export const INITIAL_CLASS_RANKINGS: ClassRanking[] = [
@@ -1013,6 +1085,289 @@ export const INITIAL_CLASS_RANKINGS: ClassRanking[] = [
   { rank: 17, grade: 2, classNum: 6, score: 120, wins: 0, losses: 3 },
   { rank: 18, grade: 1, classNum: 4, score: 110, wins: 0, losses: 3 },
 ];
+
+// ==========================================
+// 종목별 각 반별 포인트 계산 함수군 (실시간 연동)
+// ==========================================
+
+export function calcTournamentPoints(
+  sportId: string,
+  grade: number,
+  classNum: number,
+  matches: Match[]
+): number {
+  const table = SPORT_RANK_POINTS_TABLE[sportId] || [150, 130, 110, 90, 70, 70, 70];
+  const gradeMatches = matches.filter((m) => m.sport === sportId && m.grade === grade);
+  const finalMatch = gradeMatches.find((m) => m.round === '결승');
+
+  // 1. 결승전 완료된 경우
+  if (finalMatch && finalMatch.status === 'completed') {
+    if (
+      (finalMatch.winnerTeam === 'teamA' && finalMatch.teamA.classNum === classNum) ||
+      (finalMatch.winnerTeam === 'teamB' && finalMatch.teamB.classNum === classNum)
+    ) {
+      return table[0]; // 1등 (우승)
+    }
+    if (
+      (finalMatch.winnerTeam === 'teamA' && finalMatch.teamB.classNum === classNum) ||
+      (finalMatch.winnerTeam === 'teamB' && finalMatch.teamA.classNum === classNum)
+    ) {
+      return table[1]; // 2등 (준우승)
+    }
+  }
+
+  // 2. 결승전 진출팀 (결승 아직 진행중 또는 예정)
+  if (
+    finalMatch &&
+    (finalMatch.teamA.classNum === classNum || finalMatch.teamB.classNum === classNum)
+  ) {
+    return table[1]; // 최소 2등 준우승 배점 확보
+  }
+
+  // 3. 4강전에서 탈락한 팀 확인
+  const semiMatches = gradeMatches.filter((m) => m.round === '4강');
+  const lostSemi = semiMatches.find(
+    (m) =>
+      m.status === 'completed' &&
+      ((m.winnerTeam === 'teamA' && m.teamB.classNum === classNum) ||
+        (m.winnerTeam === 'teamB' && m.teamA.classNum === classNum))
+  );
+
+  if (lostSemi) {
+    // 4강 탈락팀들 간의 3등 vs 4등 배점 산정
+    const completedSemiLosers = semiMatches
+      .filter((m) => m.status === 'completed')
+      .map((m) => {
+        const isA = m.winnerTeam === 'teamA';
+        const loserClass = isA ? m.teamB.classNum : m.teamA.classNum;
+        const loserScore = isA ? m.scoreB : m.scoreA;
+        const winnerScore = isA ? m.scoreA : m.scoreB;
+        return {
+          classNum: loserClass,
+          diff: loserScore - winnerScore,
+          score: loserScore,
+        };
+      })
+      .sort((a, b) => (b.diff !== a.diff ? b.diff - a.diff : b.score - a.score));
+
+    const loserIndex = completedSemiLosers.findIndex((l) => l.classNum === classNum);
+    if (loserIndex === 0) {
+      return table[2]; // 3위 배점
+    } else if (loserIndex === 1) {
+      return table[3]; // 4위 배점
+    }
+    return table[2];
+  }
+
+  // 4강 승리팀 (아직 결승 카드에 반영되기 전이라도 최소 2위 확보)
+  const wonSemi = semiMatches.find(
+    (m) =>
+      m.status === 'completed' &&
+      ((m.winnerTeam === 'teamA' && m.teamA.classNum === classNum) ||
+        (m.winnerTeam === 'teamB' && m.teamB.classNum === classNum))
+  );
+  if (wonSemi) {
+    return table[1];
+  }
+
+  // 4. 8강/예선 탈락팀 확인
+  const earlyMatches = gradeMatches.filter((m) => m.round === '8강' || m.round === '예선');
+  const lostEarly = earlyMatches.find(
+    (m) =>
+      m.status === 'completed' &&
+      ((m.winnerTeam === 'teamA' && m.teamB.classNum === classNum) ||
+        (m.winnerTeam === 'teamB' && m.teamA.classNum === classNum))
+  );
+
+  if (lostEarly) {
+    return table[4]; // 5~7등 기본 참가 배점
+  }
+
+  // 8강/예선 승리팀 (최소 4강 확보)
+  const wonEarly = earlyMatches.find(
+    (m) =>
+      m.status === 'completed' &&
+      ((m.winnerTeam === 'teamA' && m.teamA.classNum === classNum) ||
+        (m.winnerTeam === 'teamB' && m.teamB.classNum === classNum))
+  );
+  if (wonEarly) {
+    return table[3];
+  }
+
+  return 0; // 아직 경기 미진행 또는 대기중
+}
+
+export function calcRankingSportPoints(
+  sportId: string,
+  grade: number,
+  classNum: number,
+  sportRankings: SportRankingEntry[]
+): number {
+  const entry = sportRankings.find(
+    (r) => r.sportId === sportId && r.grade === grade && r.classNum === classNum
+  );
+  if (!entry || entry.rank <= 0) return 0;
+  return entry.points;
+}
+
+export function calcClassSportScore(
+  sportId: string,
+  grade: number,
+  classNum: number,
+  matches: Match[],
+  sportRankings: SportRankingEntry[]
+): number {
+  if (isTournamentSport(sportId)) {
+    return calcTournamentPoints(sportId, grade, classNum, matches);
+  }
+  return calcRankingSportPoints(sportId, grade, classNum, sportRankings);
+}
+
+export function calcClassSportScoreDetail(
+  sportId: string,
+  grade: number,
+  classNum: number,
+  matches: Match[],
+  sportRankings: SportRankingEntry[]
+): { score: number; detail: string; badge?: string } {
+  if (isTournamentSport(sportId)) {
+    const score = calcTournamentPoints(sportId, grade, classNum, matches);
+    const table = SPORT_RANK_POINTS_TABLE[sportId] || [150, 130, 110, 90, 70, 70, 70];
+    if (score === table[0] && score > 0) {
+      return { score, detail: `🥇 1위 우승 (${score}pt)`, badge: '우승' };
+    }
+    if (score === table[1]) {
+      return { score, detail: `🥈 2위 준우승 (${score}pt)`, badge: '준우승' };
+    }
+    if (score === table[2]) {
+      return { score, detail: `🥉 3위 (${score}pt)`, badge: '3위' };
+    }
+    if (score === table[3]) {
+      return { score, detail: `4위 (${score}pt)`, badge: '4위' };
+    }
+    if (score === table[4]) {
+      return { score, detail: `예선/8강 참가 (${score}pt)`, badge: '참가' };
+    }
+    return { score: 0, detail: '경기 대기중 (0pt)' };
+  } else {
+    const entry = sportRankings.find(
+      (r) => r.sportId === sportId && r.grade === grade && r.classNum === classNum
+    );
+    if (!entry || entry.rank <= 0) {
+      return { score: 0, detail: '순위 대기중 (0pt)' };
+    }
+    const badges: Record<number, string> = { 1: '🥇 1위', 2: '🥈 2위', 3: '🥉 3위' };
+    const badge = badges[entry.rank] || `${entry.rank}위`;
+    return {
+      score: entry.points,
+      detail: `${badge} (${entry.points}pt)${entry.record ? ` - ${entry.record}` : ''}`,
+      badge,
+    };
+  }
+}
+
+// 18개 학급 및 3개 학년 종합 점수/순위 일괄 재계산 함수
+export function recalculateAllScores(
+  matches: Match[],
+  sportRankings: SportRankingEntry[]
+): { classRankings: ClassRanking[]; gradeScores: GradeScore[] } {
+  const ALL_CLASSES = [
+    { grade: 1, classes: [1, 2, 3, 4, 5] },
+    { grade: 2, classes: [1, 2, 3, 4, 5, 6, 7] },
+    { grade: 3, classes: [1, 2, 3, 4, 5, 6] },
+  ];
+
+  const classRankings: ClassRanking[] = [];
+  const gradeTotals: Record<number, { totalScore: number; gold: number; silver: number; bronze: number }> = {
+    1: { totalScore: 0, gold: 0, silver: 0, bronze: 0 },
+    2: { totalScore: 0, gold: 0, silver: 0, bronze: 0 },
+    3: { totalScore: 0, gold: 0, silver: 0, bronze: 0 },
+  };
+
+  ALL_CLASSES.forEach(({ grade, classes }) => {
+    classes.forEach((cNum) => {
+      let totalScore = 0;
+      let wins = 0;
+      let losses = 0;
+
+      SPORT_CATEGORIES.forEach((sport) => {
+        const score = calcClassSportScore(sport.id, grade, cNum, matches, sportRankings);
+        totalScore += score;
+      });
+
+      // 토너먼트 경기 승패 집계
+      matches.forEach((m) => {
+        if (m.grade === grade && m.status === 'completed') {
+          if (m.winnerTeam === 'teamA') {
+            if (m.teamA.classNum === cNum) wins++;
+            if (m.teamB.classNum === cNum) losses++;
+          } else if (m.winnerTeam === 'teamB') {
+            if (m.teamB.classNum === cNum) wins++;
+            if (m.teamA.classNum === cNum) losses++;
+          }
+        }
+      });
+
+      // 순위제 종목 1위 우승 집계
+      sportRankings.forEach((r) => {
+        if (r.grade === grade && r.classNum === cNum && r.rank === 1) {
+          wins++;
+        }
+      });
+
+      classRankings.push({
+        rank: 1,
+        grade,
+        classNum: cNum,
+        score: totalScore,
+        wins,
+        losses,
+      });
+
+      gradeTotals[grade].totalScore += totalScore;
+    });
+  });
+
+  // 점수 내림차순, 승수 내림차순 정렬 후 순위 부여
+  classRankings.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return b.wins - a.wins;
+  });
+  classRankings.forEach((cr, idx) => {
+    cr.rank = idx + 1;
+  });
+
+  // 메달 개수 집계
+  SPORT_CATEGORIES.forEach((sport) => {
+    if (isTournamentSport(sport.id)) {
+      [1, 2, 3].forEach((g) => {
+        const gMatches = matches.filter((m) => m.sport === sport.id && m.grade === g);
+        const finalMatch = gMatches.find((m) => m.round === '결승');
+        if (finalMatch && finalMatch.status === 'completed') {
+          gradeTotals[g].gold++;
+          gradeTotals[g].silver++;
+        }
+      });
+    } else {
+      sportRankings.forEach((r) => {
+        if (r.sportId === sport.id) {
+          if (r.rank === 1) gradeTotals[r.grade].gold++;
+          if (r.rank === 2) gradeTotals[r.grade].silver++;
+          if (r.rank === 3) gradeTotals[r.grade].bronze++;
+        }
+      });
+    }
+  });
+
+  const gradeScores: GradeScore[] = [
+    { grade: 1, totalScore: gradeTotals[1].totalScore, goldMedals: gradeTotals[1].gold, silverMedals: gradeTotals[1].silver, bronzeMedals: gradeTotals[1].bronze, classesCount: 5 },
+    { grade: 2, totalScore: gradeTotals[2].totalScore, goldMedals: gradeTotals[2].gold, silverMedals: gradeTotals[2].silver, bronzeMedals: gradeTotals[2].bronze, classesCount: 7 },
+    { grade: 3, totalScore: gradeTotals[3].totalScore, goldMedals: gradeTotals[3].gold, silverMedals: gradeTotals[3].silver, bronzeMedals: gradeTotals[3].bronze, classesCount: 6 },
+  ];
+
+  return { classRankings, gradeScores };
+}
+
 
 export const INITIAL_POSTS: Post[] = [
   {

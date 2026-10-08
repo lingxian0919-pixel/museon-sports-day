@@ -7,16 +7,19 @@ import {
   INITIAL_GRADE_SCORES,
   INITIAL_CLASS_RANKINGS,
   INITIAL_SPORT_RANKINGS,
-  calculateRankPoints,
+  generateCleanMatches,
+  generateCleanSportRankings,
+  generateCleanGradeScores,
+  generateCleanClassRankings,
+  recalculateAllScores,
   getRankPoints,
-  SPORT_CATEGORIES,
 } from './mockData';
 import { addRankingScore } from './supabase';
 
-const STORAGE_KEY_MATCHES = 'museon_sports_matches_v10';
-const STORAGE_KEY_GRADES = 'museon_sports_grades_v10';
-const STORAGE_KEY_CLASSES = 'museon_sports_classes_v10';
-const STORAGE_KEY_SPORT_RANKINGS = 'museon_sports_sport_rankings_v10';
+const STORAGE_KEY_MATCHES = 'museon_sports_matches_v11';
+const STORAGE_KEY_GRADES = 'museon_sports_grades_v11';
+const STORAGE_KEY_CLASSES = 'museon_sports_classes_v11';
+const STORAGE_KEY_SPORT_RANKINGS = 'museon_sports_sport_rankings_v11';
 
 export function useSportsData() {
   const [matches, setMatches] = useState<Match[]>(INITIAL_MATCHES);
@@ -84,7 +87,10 @@ export function useSportsData() {
       if (m.id !== matchId) return m;
       const nextScoreA = team === 'A' ? Math.max(0, m.scoreA + delta) : m.scoreA;
       const nextScoreB = team === 'B' ? Math.max(0, m.scoreB + delta) : m.scoreB;
-      const nextStatus = (m.status === 'scheduled' && (nextScoreA > 0 || nextScoreB > 0)) ? 'in_progress' : m.status;
+      const nextStatus =
+        m.status === 'scheduled' && (nextScoreA > 0 || nextScoreB > 0)
+          ? 'in_progress'
+          : m.status;
       return {
         ...m,
         scoreA: nextScoreA,
@@ -93,14 +99,13 @@ export function useSportsData() {
       };
     });
     setMatches(updatedMatches);
-    saveState(updatedMatches, gradeScores, classRankings);
+    saveState(updatedMatches, gradeScores, classRankings, sportRankings);
   };
 
   const handleFinishMatch = (matchId: string, winner: 'teamA' | 'teamB') => {
     const targetMatch = matches.find((m) => m.id === matchId);
     if (!targetMatch) return;
 
-    const points = targetMatch.pointsForWinner || 100;
     const winningTeam = winner === 'teamA' ? targetMatch.teamA : targetMatch.teamB;
 
     // 1. Update Match status & Propagate winner to downstream matches
@@ -124,56 +129,25 @@ export function useSportsData() {
       return nextMatch;
     });
 
-    // 2. Award points to Grade Score if valid class
-    let updatedGrades = gradeScores;
-    if (winningTeam.classNum > 0) {
-      updatedGrades = gradeScores.map((gs) => {
-        if (gs.grade !== winningTeam.grade) return gs;
-        return {
-          ...gs,
-          totalScore: gs.totalScore + points,
-          goldMedals: gs.goldMedals + 1,
-        };
-      });
-    }
-
-    // 3. Award points to Class Ranking if valid class
-    let updatedClasses = classRankings;
-    if (winningTeam.classNum > 0) {
-      updatedClasses = classRankings.map((cr) => {
-        if (cr.grade === winningTeam.grade && cr.classNum === winningTeam.classNum) {
-          return {
-            ...cr,
-            score: cr.score + points,
-            wins: cr.wins + 1,
-          };
-        }
-        return cr;
-      });
-
-      // Re-sort and recalculate rank 1 to 18
-      updatedClasses.sort((a, b) => b.score - a.score);
-      updatedClasses = updatedClasses.map((cr, idx) => ({ ...cr, rank: idx + 1 }));
-    }
+    // 2. 일괄 종합 점수 및 순위 동기화 (배점표 기준)
+    const { classRankings: updatedClasses, gradeScores: updatedGrades } =
+      recalculateAllScores(updatedMatches, sportRankings);
 
     setMatches(updatedMatches);
     setGradeScores(updatedGrades);
     setClassRankings(updatedClasses);
-    saveState(updatedMatches, updatedGrades, updatedClasses);
+    saveState(updatedMatches, updatedGrades, updatedClasses, sportRankings);
 
-    // Also register to Supabase rankings
+    // Supabase 명예의 전당 등록
     if (winningTeam.classNum > 0) {
       const nickname = `${winningTeam.grade}학년 ${winningTeam.classNum}반`;
-      addRankingScore(nickname, points).catch(() => {});
+      addRankingScore(nickname, targetMatch.pointsForWinner || 100).catch(() => {});
     }
   };
 
   const handleCancelWinner = (matchId: string) => {
     const targetMatch = matches.find((m) => m.id === matchId);
     if (!targetMatch || targetMatch.status !== 'completed' || !targetMatch.winnerTeam) return;
-
-    const points = targetMatch.pointsForWinner || 100;
-    const prevWinningTeam = targetMatch.winnerTeam === 'teamA' ? targetMatch.teamA : targetMatch.teamB;
 
     const updatedMatches = matches.map((m) => {
       if (m.id === matchId) {
@@ -185,46 +159,30 @@ export function useSportsData() {
       }
       let nextMatch = { ...m };
       if (m.sourceMatchAId === matchId) {
-        nextMatch.teamA = { name: `${targetMatch.bracketLabel || '이전 경기'} 승자`, grade: targetMatch.grade || 1, classNum: 0 };
+        nextMatch.teamA = {
+          name: `${targetMatch.bracketLabel || '이전 경기'} 승자`,
+          grade: targetMatch.grade || 1,
+          classNum: 0,
+        };
       }
       if (m.sourceMatchBId === matchId) {
-        nextMatch.teamB = { name: `${targetMatch.bracketLabel || '이전 경기'} 승자`, grade: targetMatch.grade || 1, classNum: 0 };
+        nextMatch.teamB = {
+          name: `${targetMatch.bracketLabel || '이전 경기'} 승자`,
+          grade: targetMatch.grade || 1,
+          classNum: 0,
+        };
       }
       return nextMatch;
     });
 
-    let updatedGrades = gradeScores;
-    if (prevWinningTeam.classNum > 0) {
-      updatedGrades = gradeScores.map((gs) => {
-        if (gs.grade !== prevWinningTeam.grade) return gs;
-        return {
-          ...gs,
-          totalScore: Math.max(0, gs.totalScore - points),
-          goldMedals: Math.max(0, gs.goldMedals - 1),
-        };
-      });
-    }
-
-    let updatedClasses = classRankings;
-    if (prevWinningTeam.classNum > 0) {
-      updatedClasses = classRankings.map((cr) => {
-        if (cr.grade === prevWinningTeam.grade && cr.classNum === prevWinningTeam.classNum) {
-          return {
-            ...cr,
-            score: Math.max(0, cr.score - points),
-            wins: Math.max(0, cr.wins - 1),
-          };
-        }
-        return cr;
-      });
-      updatedClasses.sort((a, b) => b.score - a.score);
-      updatedClasses = updatedClasses.map((cr, idx) => ({ ...cr, rank: idx + 1 }));
-    }
+    // 점수 재계산
+    const { classRankings: updatedClasses, gradeScores: updatedGrades } =
+      recalculateAllScores(updatedMatches, sportRankings);
 
     setMatches(updatedMatches);
     setGradeScores(updatedGrades);
     setClassRankings(updatedClasses);
-    saveState(updatedMatches, updatedGrades, updatedClasses);
+    saveState(updatedMatches, updatedGrades, updatedClasses, sportRankings);
   };
 
   const handleStatusUpdate = (matchId: string, status: MatchStatus) => {
@@ -233,10 +191,19 @@ export function useSportsData() {
       return {
         ...m,
         status,
+        ...(status === 'scheduled'
+          ? { scoreA: 0, scoreB: 0, winnerTeam: undefined }
+          : {}),
       };
     });
+
+    const { classRankings: updatedClasses, gradeScores: updatedGrades } =
+      recalculateAllScores(updatedMatches, sportRankings);
+
     setMatches(updatedMatches);
-    saveState(updatedMatches, gradeScores, classRankings, sportRankings);
+    setGradeScores(updatedGrades);
+    setClassRankings(updatedClasses);
+    saveState(updatedMatches, updatedGrades, updatedClasses, sportRankings);
   };
 
   const handleUpdateSportRanking = (
@@ -248,15 +215,6 @@ export function useSportsData() {
   ) => {
     const newPoints = getRankPoints(sportId, rank);
 
-    let oldPoints = 0;
-    const existing = sportRankings.find(
-      (r) => r.sportId === sportId && r.grade === grade && r.classNum === classNum
-    );
-    if (existing) oldPoints = existing.points;
-
-    const delta = newPoints - oldPoints;
-
-    // 1. Update sportRankings
     const updatedRankings = sportRankings.map((r) => {
       if (r.sportId === sportId && r.grade === grade && r.classNum === classNum) {
         return {
@@ -269,61 +227,32 @@ export function useSportsData() {
       return r;
     });
 
-    // 2. Adjust points in gradeScores
-    let updatedGrades = gradeScores;
-    if (delta !== 0) {
-      updatedGrades = gradeScores.map((gs) => {
-        if (gs.grade !== grade) return gs;
-        return {
-          ...gs,
-          totalScore: Math.max(0, gs.totalScore + delta),
-          goldMedals:
-            rank === 1
-              ? gs.goldMedals + 1
-              : existing?.rank === 1
-              ? Math.max(0, gs.goldMedals - 1)
-              : gs.goldMedals,
-        };
-      });
-    }
-
-    // 3. Adjust points in classRankings
-    let updatedClasses = classRankings;
-    if (delta !== 0) {
-      updatedClasses = classRankings.map((cr) => {
-        if (cr.grade === grade && cr.classNum === classNum) {
-          return {
-            ...cr,
-            score: Math.max(0, cr.score + delta),
-            wins: rank === 1 ? cr.wins + 1 : cr.wins,
-          };
-        }
-        return cr;
-      });
-      updatedClasses.sort((a, b) => b.score - a.score);
-      updatedClasses = updatedClasses.map((cr, idx) => ({ ...cr, rank: idx + 1 }));
-    }
+    const { classRankings: updatedClasses, gradeScores: updatedGrades } =
+      recalculateAllScores(matches, updatedRankings);
 
     setSportRankings(updatedRankings);
     setGradeScores(updatedGrades);
     setClassRankings(updatedClasses);
     saveState(matches, updatedGrades, updatedClasses, updatedRankings);
 
-    // Also register to Supabase rankings if point delta is positive
-    if (delta > 0) {
+    if (newPoints > 0) {
       const nickname = `${grade}학년 ${classNum}반`;
-      addRankingScore(nickname, delta).catch(() => {});
+      addRankingScore(nickname, newPoints).catch(() => {});
     }
   };
 
+  // 모든 경기 대기중, 점수 0점, 승리반 없음 완전 초기화
   const handleResetData = () => {
-    if (confirm('모든 점수와 경기 상태를 초기 상태로 리셋하시겠습니까?')) {
-      setMatches(INITIAL_MATCHES);
-      setGradeScores(INITIAL_GRADE_SCORES);
-      setClassRankings(INITIAL_CLASS_RANKINGS);
-      setSportRankings(INITIAL_SPORT_RANKINGS);
-      saveState(INITIAL_MATCHES, INITIAL_GRADE_SCORES, INITIAL_CLASS_RANKINGS, INITIAL_SPORT_RANKINGS);
-    }
+    const cleanMatches = generateCleanMatches();
+    const cleanRankings = generateCleanSportRankings();
+    const cleanGrades = generateCleanGradeScores();
+    const cleanClasses = generateCleanClassRankings();
+
+    setMatches(cleanMatches);
+    setSportRankings(cleanRankings);
+    setGradeScores(cleanGrades);
+    setClassRankings(cleanClasses);
+    saveState(cleanMatches, cleanGrades, cleanClasses, cleanRankings);
   };
 
   return {
@@ -340,4 +269,3 @@ export function useSportsData() {
     handleResetData,
   };
 }
-

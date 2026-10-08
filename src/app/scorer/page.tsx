@@ -4,9 +4,10 @@ import React, { useState, useEffect } from 'react';
 import Header from '../../components/Header';
 import ScoreHero from '../../components/ScoreHero';
 import MatchesBento from '../../components/MatchesBento';
-import CheeringBoardBento from '../../components/CheeringBoardBento';
+import ClassSportScoreMatrix from '../../components/ClassSportScoreMatrix';
 import TournamentBracketModal from '../../components/TournamentBracketModal';
 import ScoreRulesModal from '../../components/ScoreRulesModal';
+import ResetConfirmModal from '../../components/ResetConfirmModal';
 import { useSportsData } from '../../lib/useSportsData';
 import { Swords, RotateCcw, ShieldAlert, Award } from 'lucide-react';
 
@@ -14,6 +15,7 @@ export default function ScorerAdminPage() {
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [isBracketOpen, setIsBracketOpen] = useState<boolean>(false);
   const [isScoreRulesOpen, setIsScoreRulesOpen] = useState<boolean>(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState<boolean>(false);
 
   const {
     matches,
@@ -64,9 +66,9 @@ export default function ScorerAdminPage() {
             <span>종목별 공식 배점표</span>
           </button>
           <button
-            onClick={handleResetData}
+            onClick={() => setIsResetModalOpen(true)}
             title="초기 데이터로 리셋"
-            className="px-2.5 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold flex items-center gap-1 transition-colors"
+            className="px-2.5 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-600 dark:text-rose-400 font-bold flex items-center gap-1 transition-colors border border-rose-500/30 cursor-pointer shadow-sm active:scale-95"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>데이터 초기화</span>
@@ -101,9 +103,13 @@ export default function ScorerAdminPage() {
         />
       </div>
 
-      {/* Cheering Community Board (Supabase posts) */}
+      {/* Real-time Sport Points Matrix Table per Class */}
       <div className="mb-8">
-        <CheeringBoardBento />
+        <ClassSportScoreMatrix
+          matches={matches}
+          sportRankings={sportRankings}
+          isScorerMode={true}
+        />
       </div>
 
       {/* Footer */}
@@ -145,6 +151,13 @@ export default function ScorerAdminPage() {
       <ScoreRulesModal
         isOpen={isScoreRulesOpen}
         onClose={() => setIsScoreRulesOpen(false)}
+      />
+
+      {/* Reset Confirmation Modal */}
+      <ResetConfirmModal
+        isOpen={isResetModalOpen}
+        onClose={() => setIsResetModalOpen(false)}
+        onConfirmReset={handleResetData}
       />
     </main>
   );
