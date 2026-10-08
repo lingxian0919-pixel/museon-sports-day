@@ -16,10 +16,10 @@ import {
 } from './mockData';
 import { addRankingScore } from './supabase';
 
-const STORAGE_KEY_MATCHES = 'museon_sports_matches_v11';
-const STORAGE_KEY_GRADES = 'museon_sports_grades_v11';
-const STORAGE_KEY_CLASSES = 'museon_sports_classes_v11';
-const STORAGE_KEY_SPORT_RANKINGS = 'museon_sports_sport_rankings_v11';
+const STORAGE_KEY_MATCHES = 'museon_sports_matches_v12';
+const STORAGE_KEY_GRADES = 'museon_sports_grades_v12';
+const STORAGE_KEY_CLASSES = 'museon_sports_classes_v12';
+const STORAGE_KEY_SPORT_RANKINGS = 'museon_sports_sport_rankings_v12';
 
 export function useSportsData() {
   const [matches, setMatches] = useState<Match[]>(INITIAL_MATCHES);
@@ -37,7 +37,17 @@ export function useSportsData() {
         const savedClasses = localStorage.getItem(STORAGE_KEY_CLASSES);
         const savedSportRankings = localStorage.getItem(STORAGE_KEY_SPORT_RANKINGS);
 
-        if (savedMatches) setMatches(JSON.parse(savedMatches));
+        if (savedMatches) {
+          const parsed: Match[] = JSON.parse(savedMatches);
+          const synced = parsed.map((m) => {
+            const initial = INITIAL_MATCHES.find((im) => im.id === m.id);
+            if (initial && initial.time !== m.time) {
+              return { ...m, time: initial.time, court: initial.court };
+            }
+            return m;
+          });
+          setMatches(synced);
+        }
         if (savedGrades) setGradeScores(JSON.parse(savedGrades));
         if (savedClasses) setClassRankings(JSON.parse(savedClasses));
         if (savedSportRankings) setSportRankings(JSON.parse(savedSportRankings));
