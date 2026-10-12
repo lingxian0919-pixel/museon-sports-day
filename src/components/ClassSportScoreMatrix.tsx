@@ -128,7 +128,7 @@ export default function ClassSportScoreMatrix({
               <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
                 종목별 각 반별 포인트 계산표
                 <span className="text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/20 hidden sm:inline-block">
-                  X축: 18개 반 • Y축: 11개 종목
+                  X축: 11개 종목 • Y축: 18개 반
                 </span>
               </h2>
             </div>
@@ -197,80 +197,92 @@ export default function ClassSportScoreMatrix({
 
       {/* Main Matrix Table Container */}
       <div className="overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-inner bg-slate-50/50 dark:bg-slate-900/50">
-        <table className="w-full text-xs text-left border-collapse min-w-[700px]">
-          {/* Table Header: X-Axis (Classes) */}
+        <table className="w-full text-xs text-left border-collapse min-w-[900px]">
+          {/* Table Header: X-Axis (11 Sports + Total) */}
           <thead>
-            <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-800/80 sticky top-0 z-20">
-              <th className="py-3 px-3.5 font-black text-slate-800 dark:text-slate-200 w-44 sticky left-0 bg-slate-100 dark:bg-slate-800 z-30 shadow-sm border-r border-slate-200 dark:border-slate-700">
+            <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-100/90 dark:bg-slate-800/90 sticky top-0 z-20">
+              <th className="py-3 px-3.5 font-black text-slate-800 dark:text-slate-200 w-36 sticky left-0 bg-slate-100 dark:bg-slate-800 z-30 shadow-sm border-r border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-1.5">
                   <TableIcon className="w-3.5 h-3.5 text-indigo-500" />
-                  <span>종목 (Y축) \ 반 (X축)</span>
+                  <span>반 (Y축) \ 종목 (X축)</span>
                 </div>
               </th>
 
-              {displayedClasses.map((c) => {
-                const theme = getGradeTheme(c.grade);
+              {SPORT_CATEGORIES.map((sport) => {
+                const isTourney = isTournamentSport(sport.id);
                 return (
                   <th
-                    key={`${c.grade}-${c.classNum}`}
-                    className={`py-3 px-2 text-center font-black transition-colors ${theme.header}`}
+                    key={sport.id}
+                    className="py-2.5 px-2 text-center font-black text-slate-800 dark:text-slate-200 border-r border-slate-200/50 dark:border-slate-700/50 min-w-[78px]"
                   >
-                    <div className="flex flex-col items-center">
-                      <span className="text-[10px] opacity-75 font-medium">
-                        {c.grade}학년
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span
+                        className={`text-[9px] px-1.5 py-0.2 rounded font-bold shrink-0 ${
+                          isTourney
+                            ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+                            : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                        }`}
+                      >
+                        {isTourney ? '토너먼트' : '순위제'}
                       </span>
-                      <span className="text-xs font-black">
-                        {c.classNum}반
+                      <span className="text-xs font-extrabold whitespace-nowrap mt-0.5">
+                        {sport.name}
                       </span>
                     </div>
                   </th>
                 );
               })}
 
-              <th className="py-3 px-3 text-center font-black bg-amber-500/15 text-amber-700 dark:text-amber-300 border-l border-slate-200 dark:border-slate-700 w-24">
-                종목 배점
+              <th className="py-3 px-3 text-center font-black bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-l-2 border-slate-300 dark:border-slate-700 w-28">
+                <div className="flex flex-col items-center">
+                  <div className="flex items-center gap-1">
+                    <Trophy className="w-3.5 h-3.5 text-amber-500" />
+                    <span>누적 총점</span>
+                  </div>
+                  <span className="text-[9px] opacity-80 font-bold">(TOTAL)</span>
+                </div>
               </th>
             </tr>
           </thead>
 
-          {/* Table Body: Y-Axis (11 Sports) */}
+          {/* Table Body: Y-Axis (Classes) */}
           <tbody className="divide-y divide-slate-200/70 dark:divide-slate-800/70">
-            {SPORT_CATEGORIES.map((sport, sIdx) => {
-              const isTourney = isTournamentSport(sport.id);
+            {displayedClasses.map((c, cIdx) => {
+              const theme = getGradeTheme(c.grade);
+              const classKey = `${c.grade}-${c.classNum}`;
+              const total = classTotals[classKey] || 0;
+              const isLeader = total > 0 && total === maxScore;
+
               return (
                 <tr
-                  key={sport.id}
+                  key={classKey}
                   className={`transition-colors hover:bg-indigo-50/40 dark:hover:bg-indigo-950/20 ${
-                    sIdx % 2 === 0
+                    cIdx % 2 === 0
                       ? 'bg-white/60 dark:bg-slate-900/40'
                       : 'bg-slate-50/40 dark:bg-slate-900/70'
                   }`}
                 >
-                  {/* Fixed Sport Name Header Cell */}
+                  {/* Fixed Class Name Header Cell (Y-Axis) */}
                   <td className="py-2.5 px-3.5 font-bold text-slate-900 dark:text-slate-100 sticky left-0 bg-inherit z-10 border-r border-slate-200/70 dark:border-slate-700/70 shadow-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center text-[10px] font-black shrink-0">
-                        {sIdx + 1}
-                      </span>
-                      <div className="truncate">
-                        <div className="font-extrabold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                          <span className="truncate">{sport.name}</span>
-                          <span
-                            className={`text-[9px] px-1.5 py-0.2 rounded font-bold shrink-0 ${
-                              isTourney
-                                ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
-                                : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
-                            }`}
-                          >
-                            {isTourney ? '토너먼트' : '순위제'}
-                          </span>
-                        </div>
+                    <div className="flex items-center justify-between gap-1.5">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`text-[10px] px-1.5 py-0.5 rounded font-black shrink-0 ${theme.pill}`}
+                        >
+                          {c.grade}학년
+                        </span>
+                        <span className="text-xs sm:text-sm font-black text-slate-800 dark:text-slate-100 whitespace-nowrap">
+                          {c.classNum}반
+                        </span>
                       </div>
+                      {isLeader && (
+                        <Crown className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                      )}
                     </div>
                   </td>
 
-                  {/* Sport Points per Class Cells */}
-                  {displayedClasses.map((c) => {
+                  {/* Sport Points Cells for this Class (X-Axis) */}
+                  {SPORT_CATEGORIES.map((sport) => {
                     const cellKey = `${sport.id}-${c.grade}-${c.classNum}`;
                     const score = calcClassSportScore(
                       sport.id,
@@ -293,7 +305,7 @@ export default function ClassSportScoreMatrix({
                         key={cellKey}
                         onMouseEnter={() => setHoveredCell(cellKey)}
                         onMouseLeave={() => setHoveredCell(null)}
-                        className={`py-2 px-1 text-center font-bold transition-all relative ${
+                        className={`py-2 px-1 text-center font-bold transition-all relative border-r border-slate-200/40 dark:border-slate-800/40 ${
                           score > 0
                             ? 'bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-extrabold'
                             : 'text-slate-400 dark:text-slate-500 font-medium'
@@ -325,52 +337,49 @@ export default function ClassSportScoreMatrix({
                     );
                   })}
 
-                  {/* Sport Max Points / Description */}
-                  <td className="py-2 px-2 text-center border-l border-slate-200 dark:border-slate-700 text-[11px] font-bold text-amber-700 dark:text-amber-400 bg-amber-500/5">
-                    1위 {sport.totalPoints}pt
+                  {/* Row Total Score for this Class */}
+                  <td
+                    className={`py-2.5 px-2 text-center font-black border-l-2 border-slate-300 dark:border-slate-700 transition-all ${
+                      isLeader
+                        ? 'bg-amber-500/25 text-amber-900 dark:text-amber-200 ring-2 ring-inset ring-amber-400/50'
+                        : total > 0
+                        ? 'bg-indigo-500/5 text-indigo-600 dark:text-indigo-300'
+                        : 'text-slate-400 dark:text-slate-500'
+                    }`}
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      {isLeader && (
+                        <Crown className="w-3.5 h-3.5 text-amber-500 animate-bounce shrink-0" />
+                      )}
+                      <span className="text-xs sm:text-sm font-black">{total}</span>
+                      <span className="text-[9px] opacity-75 font-semibold">pt</span>
+                    </div>
                   </td>
                 </tr>
               );
             })}
           </tbody>
 
-          {/* Table Footer: Column Totals for Each Class */}
+          {/* Table Footer: Max Points per Sport */}
           <tfoot>
             <tr className="border-t-2 border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/90 font-black">
-              <td className="py-3.5 px-3.5 font-black text-slate-900 dark:text-white sticky left-0 bg-slate-100 dark:bg-slate-800 z-30 shadow-sm border-r border-slate-200 dark:border-slate-700">
-                <div className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
-                  <Trophy className="w-4 h-4 text-amber-500" />
-                  <span className="text-xs sm:text-sm font-black">누적 총점 (TOTAL)</span>
+              <td className="py-3 px-3.5 font-black text-slate-700 dark:text-slate-300 sticky left-0 bg-slate-100 dark:bg-slate-800 z-30 shadow-sm border-r border-slate-200 dark:border-slate-700">
+                <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
+                  <Award className="w-4 h-4 text-amber-500" />
+                  <span className="text-xs font-black">종목 배점 (1위)</span>
                 </div>
               </td>
 
-              {displayedClasses.map((c) => {
-                const total = classTotals[`${c.grade}-${c.classNum}`] || 0;
-                const isLeader = total > 0 && total === maxScore;
+              {SPORT_CATEGORIES.map((sport) => (
+                <td
+                  key={`max-${sport.id}`}
+                  className="py-3 px-1.5 text-center border-r border-slate-200/50 dark:border-slate-700/50 text-[11px] font-bold text-amber-700 dark:text-amber-400 bg-amber-500/5"
+                >
+                  1위 {sport.totalPoints}pt
+                </td>
+              ))}
 
-                return (
-                  <td
-                    key={`total-${c.grade}-${c.classNum}`}
-                    className={`py-3.5 px-1.5 text-center font-black transition-all ${
-                      isLeader
-                        ? 'bg-amber-500/25 text-amber-900 dark:text-amber-200 ring-2 ring-amber-400/50'
-                        : total > 0
-                        ? 'text-indigo-600 dark:text-indigo-300'
-                        : 'text-slate-400 dark:text-slate-500'
-                    }`}
-                  >
-                    <div className="flex flex-col items-center">
-                      {isLeader && (
-                        <Crown className="w-3.5 h-3.5 text-amber-500 mb-0.5 animate-bounce" />
-                      )}
-                      <span className="text-xs sm:text-sm font-black">{total}</span>
-                      <span className="text-[9px] opacity-75 font-semibold">pt</span>
-                    </div>
-                  </td>
-                );
-              })}
-
-              <td className="py-3.5 px-2 text-center border-l border-slate-200 dark:border-slate-700 text-xs font-black text-amber-600 dark:text-amber-400">
+              <td className="py-3 px-2 text-center border-l-2 border-slate-300 dark:border-slate-700 text-xs font-black text-indigo-600 dark:text-indigo-400">
                 11종목 합산
               </td>
             </tr>
