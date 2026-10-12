@@ -102,30 +102,30 @@ export default function MatchesBento({
       : null;
 
   return (
-    <div className="glass-panel p-6 flex flex-col h-full shadow-lg border border-slate-200/80 dark:border-slate-800">
+    <div className="glass-panel p-5 sm:p-7 flex flex-col h-full bg-white dark:bg-[#1e2235] border-[3px] border-black shadow-[6px_6px_0px_0px_#000000]">
       {/* 1. Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 pb-4 border-b-[3px] border-black">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-indigo-500/10 text-indigo-500 dark:text-indigo-400">
-              <Trophy className="w-5 h-5" />
+          <div className="flex items-center gap-3">
+            <span className="p-2.5 rounded-xl bg-[#38BDF8] text-black border-[3px] border-black shadow-[3px_3px_0px_0px_#000000]">
+              <Trophy className="w-5 h-5 stroke-[2.5]" />
             </span>
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+              <h2 className="text-xl sm:text-2xl font-black text-black dark:text-white tracking-tight">
                 종목별 대진표 & 경기 현황
               </h2>
               {isScorerMode ? (
-                <span className="text-[10px] bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1">
-                  <ShieldAlert className="w-3 h-3" /> 기록원 입력 모드
+                <span className="text-xs bg-[#FFE600] text-black font-black px-3 py-1 rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_#000] flex items-center gap-1">
+                  <ShieldAlert className="w-3.5 h-3.5 stroke-[2.5]" /> 기록원 입력 모드
                 </span>
               ) : (
-                <span className="text-[10px] bg-blue-500/15 text-blue-600 dark:text-blue-400 font-bold px-2.5 py-0.5 rounded-full border border-blue-500/20 flex items-center gap-1">
-                  <Eye className="w-3 h-3" /> 학생 조회 전용
+                <span className="text-xs bg-[#00E599] text-black font-black px-3 py-1 rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_#000] flex items-center gap-1">
+                  <Eye className="w-3.5 h-3.5 stroke-[2.5]" /> 학생 조회 전용
                 </span>
               )}
             </div>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs font-bold text-slate-700 dark:text-slate-300 mt-1.5 pl-12">
             {isTournamentSport(selectedSport)
               ? isScorerMode
                 ? '축구, 피구, 풋살, 줄다리기 4개 종목 토너먼트 대진표입니다. 반 이름 오른쪽에서 점수 및 우승을 결정하고, 상단 버튼으로 대기중/진행중/종료 상태를 변경할 수 있습니다.'
@@ -137,55 +137,55 @@ export default function MatchesBento({
         </div>
 
         {/* Actions & View Mode Toggle */}
-        <div className="flex items-center gap-2 self-start md:self-auto shrink-0 flex-wrap">
+        <div className="flex items-center gap-2.5 self-start md:self-auto shrink-0 flex-wrap">
           {/* 종목별 공식 배점표 모달 버튼 */}
           <button
             type="button"
             onClick={() => setIsScoreRulesOpen(true)}
-            className="px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-400 text-xs font-black transition-all flex items-center gap-1.5 border border-amber-500/30 shadow-xs"
+            className="neo-btn px-3.5 py-2 rounded-xl bg-[#FF5C8D] hover:bg-[#FFE600] text-black text-xs font-black flex items-center gap-1.5"
             title="11개 종목별 1등~7등 공식 배점표 보기"
           >
-            <Award className="w-3.5 h-3.5 text-amber-500" />
+            <Award className="w-4 h-4 stroke-[2.5]" />
             <span>종목별 공식 배점표</span>
           </button>
 
           {/* View Mode Toggle (토너먼트 종목일 때만 대진 트리 / 목록 전환) */}
           {isTournamentSport(selectedSport) ? (
-            <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-slate-800/80 p-1 rounded-xl text-xs font-semibold shrink-0">
+            <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border-[3px] border-black shadow-[3px_3px_0px_0px_#000] text-xs font-black shrink-0">
               <button
                 type="button"
                 onClick={() => setViewMode('bracket')}
-                className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all ${
+                className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all border-2 ${
                   viewMode === 'bracket'
-                    ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    ? 'bg-[#FFE600] text-black border-black shadow-[2px_2px_0px_0px_#000]'
+                    : 'border-transparent text-slate-700 dark:text-slate-300 hover:text-black dark:hover:text-white'
                 }`}
               >
-                <GitBranch className="w-3.5 h-3.5" /> 대진표 트리
+                <GitBranch className="w-3.5 h-3.5 stroke-[2.5]" /> 대진표 트리
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode('list')}
-                className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all ${
+                className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all border-2 ${
                   viewMode === 'list'
-                    ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    ? 'bg-[#FFE600] text-black border-black shadow-[2px_2px_0px_0px_#000]'
+                    : 'border-transparent text-slate-700 dark:text-slate-300 hover:text-black dark:hover:text-white'
                 }`}
               >
-                <ListOrdered className="w-3.5 h-3.5" /> 경기 목록
+                <ListOrdered className="w-3.5 h-3.5 stroke-[2.5]" /> 경기 목록
               </button>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold shrink-0 border border-amber-500/20">
-              <Medal className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#FFE600] text-black text-xs font-black shrink-0 border-[3px] border-black shadow-[3px_3px_0px_0px_#000]">
+              <Medal className="w-4 h-4 stroke-[2.5]" />
               <span>학년별 순위 및 기록표</span>
             </div>
           )}
         </div>
       </div>
 
-      {/* 2. 11개 종목 선택 탭 (토너먼트 vs 순위제 뱃지) */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-4 text-xs font-medium no-scrollbar border-b border-slate-200/50 dark:border-slate-800/80">
+      {/* 2. 11개 종목 선택 벤토 그리드 탭 (토너먼트 vs 순위제 뱃지) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 pb-4 mb-5 border-b-[3px] border-black">
         {SPORT_CATEGORIES.map((cat) => {
           const isSelected = selectedSport === cat.id;
           const isTournament = isTournamentSport(cat.id);
@@ -193,20 +193,18 @@ export default function MatchesBento({
             <button
               key={cat.id}
               onClick={() => setSelectedSport(cat.id)}
-              className={`px-3.5 py-2 rounded-xl whitespace-nowrap transition-all flex items-center gap-1.5 ${
+              className={`neo-btn px-3 py-2.5 rounded-xl text-xs font-black flex items-center justify-between gap-1.5 ${
                 isSelected
-                  ? 'bg-indigo-600 text-white font-bold shadow-md shadow-indigo-500/25 ring-2 ring-indigo-500/40'
-                  : 'glass-card text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/60'
+                  ? 'bg-[#FFE600] text-black translate-x-[-1.5px] translate-y-[-1.5px]'
+                  : 'bg-[#FFFDF5] dark:bg-slate-800 text-black dark:text-white hover:bg-[#38BDF8] hover:text-black'
               }`}
             >
-              <span>{cat.name}</span>
+              <span className="truncate">{cat.name}</span>
               <span
-                className={`text-[9px] px-1.5 py-0.5 rounded-md font-semibold ${
-                  isSelected
-                    ? 'bg-white/20 text-white'
-                    : isTournament
-                    ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400'
-                    : 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+                className={`text-[9px] px-1.5 py-0.5 rounded-md font-black border-[1.5px] border-black shrink-0 ${
+                  isTournament
+                    ? 'bg-[#FF5C8D] text-black'
+                    : 'bg-[#00E599] text-black'
                 }`}
               >
                 {isTournament ? '토너먼트' : '순위제'}
@@ -217,36 +215,36 @@ export default function MatchesBento({
       </div>
 
       {/* 3. 학년 선택 탭 (1학년, 2학년, 3학년) */}
-      <div className="flex items-center justify-between flex-wrap gap-3 mb-6 bg-slate-100/70 dark:bg-slate-900/40 p-2 rounded-2xl border border-slate-200/60 dark:border-slate-800/60">
-        <div className="flex items-center gap-1.5 text-xs font-bold">
-          <span className="text-slate-500 dark:text-slate-400 mr-1 pl-1">학년별 보기:</span>
+      <div className="flex items-center justify-between flex-wrap gap-3 mb-6 bg-[#FAF7F0] dark:bg-slate-900 p-3 rounded-2xl border-[3px] border-black shadow-[4px_4px_0px_0px_#000000]">
+        <div className="flex flex-wrap items-center gap-2 text-xs font-black">
+          <span className="text-black dark:text-white mr-1 pl-1">학년별 보기:</span>
           {[
-            { grade: 1, name: '1학년', desc: '5개 학급' },
-            { grade: 2, name: '2학년', desc: '7개 학급' },
-            { grade: 3, name: '3학년', desc: '6개 학급' },
+            { grade: 1, name: '1학년', desc: '5개 학급', popBg: 'bg-[#00E599]' },
+            { grade: 2, name: '2학년', desc: '7개 학급', popBg: 'bg-[#38BDF8]' },
+            { grade: 3, name: '3학년', desc: '6개 학급', popBg: 'bg-[#C084FC]' },
           ].map((item) => {
             const isSelected = selectedGrade === item.grade;
             return (
               <button
                 key={item.grade}
                 onClick={() => setSelectedGrade(item.grade)}
-                className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 ${
+                className={`neo-btn px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 ${
                   isSelected
-                    ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 font-black shadow-sm ring-1 ring-indigo-500/30'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-slate-800/40'
+                    ? `${item.popBg} text-black font-black`
+                    : 'bg-white dark:bg-slate-800 text-black dark:text-white hover:bg-[#FFE600] hover:text-black'
                 }`}
               >
                 <span>{item.name}</span>
-                <span className="text-[10px] opacity-75 font-normal">({item.desc})</span>
+                <span className="text-[10px] font-bold opacity-85">({item.desc})</span>
               </button>
             );
           })}
         </div>
 
         {/* Selected sport information banner */}
-        <div className="flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+        <div className="flex items-center gap-2 text-xs font-black px-3.5 py-1.5 rounded-xl bg-[#FFE600] text-black border-2 border-black shadow-[2px_2px_0px_0px_#000]">
           <span>{getSportCategoryBadge(selectedSport)}</span>
-          <span className="text-slate-300 dark:text-slate-600">•</span>
+          <span>•</span>
           <span>{selectedGrade}학년 {isTournamentSport(selectedSport) ? '토너먼트 대진표' : '순위 및 기록표'}</span>
         </div>
       </div>
@@ -255,40 +253,40 @@ export default function MatchesBento({
       {isTournamentSport(selectedSport) ? (
         <div className="space-y-4">
           {/* 토너먼트 공식 배점 기준 안내 배너 */}
-          <div className="glass-card p-3.5 rounded-2xl border border-indigo-500/20 bg-indigo-500/5">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5">
+          <div className="p-4 rounded-2xl border-[3px] border-black shadow-[4px_4px_0px_0px_#000000] bg-[#E0F2FE] dark:bg-slate-800">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-600 dark:text-indigo-400">
-                    <Trophy className="w-4 h-4" />
+                  <span className="p-1.5 rounded-lg bg-[#FFE600] text-black border-2 border-black shadow-[2px_2px_0px_0px_#000]">
+                    <Trophy className="w-4 h-4 stroke-[2.5]" />
                   </span>
-                  <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+                  <h3 className="font-black text-black dark:text-white text-sm sm:text-base">
                     {selectedGrade}학년 {getSportName(selectedSport)} - 토너먼트 공식 배점 기준
                   </h3>
-                  <span className="text-[11px] bg-indigo-600 text-white font-bold px-2.5 py-0.5 rounded-md flex items-center gap-1 shadow-xs">
-                    <MapPin className="w-3 h-3" /> {SPORT_COURTS[selectedSport] || '운동장/트랙'}
+                  <span className="text-[11px] bg-[#FF5C8D] text-black font-black px-2.5 py-0.5 rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_#000] flex items-center gap-1">
+                    <MapPin className="w-3 h-3 stroke-[2.5]" /> {SPORT_COURTS[selectedSport] || '운동장/트랙'}
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  장소: {SPORT_COURTS[selectedSport] || '운동장/트랙'} • <strong className="text-orange-500 dark:text-orange-400 font-bold">3위 기준: 대진표 상 1위(우승) 반에게 준결승(4강)에서 진 팀에게 3위 점수 부여</strong>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-1">
+                  장소: {SPORT_COURTS[selectedSport] || '운동장/트랙'} • <strong className="px-1.5 py-0.5 rounded bg-[#FFE600] text-black border border-black font-black">3위 기준: 대진표 상 1위(우승) 반에게 준결승(4강)에서 진 팀에게 3위 점수 부여</strong>
                 </p>
               </div>
 
               {/* 공식 배점표 뱃지 */}
-              <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
-                <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-600 dark:text-amber-300 font-black border border-amber-500/30">
+              <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-black">
+                <span className="px-2.5 py-1 rounded-lg bg-[#FFE600] text-black border-2 border-black shadow-[2px_2px_0px_0px_#000]">
                   🥇 1위(우승) {getRankPoints(selectedSport, 1)}pt
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-slate-200/80 dark:bg-slate-700/80 text-slate-700 dark:text-slate-300 font-bold">
+                <span className="px-2.5 py-1 rounded-lg bg-white text-black border-2 border-black shadow-[2px_2px_0px_0px_#000]">
                   🥈 2위(준우승) {getRankPoints(selectedSport, 2)}pt
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-orange-500/15 text-orange-600 dark:text-orange-400 font-bold" title="결승 1위 우승 반에게 준결승(4강)에서 패한 학급">
+                <span className="px-2.5 py-1 rounded-lg bg-[#FF7A00] text-black border-2 border-black shadow-[2px_2px_0px_0px_#000]" title="결승 1위 우승 반에게 준결승(4강)에서 패한 학급">
                   🥉 3위(1위팀 4강상대) {getRankPoints(selectedSport, 3)}pt
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300" title="결승 2위 준우승 반에게 준결승(4강)에서 패한 학급">
+                <span className="px-2.5 py-1 rounded-lg bg-[#00E599] text-black border-2 border-black shadow-[2px_2px_0px_0px_#000]" title="결승 2위 준우승 반에게 준결승(4강)에서 패한 학급">
                   4위(2위팀 4강상대) {getRankPoints(selectedSport, 4)}pt
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <span className="px-2.5 py-1 rounded-lg bg-slate-200 text-black border-2 border-black shadow-[2px_2px_0px_0px_#000]">
                   5~7위(기본) {getRankPoints(selectedSport, 5)}pt
                 </span>
               </div>
@@ -857,51 +855,47 @@ function BracketMatchCard({
 
   return (
     <div
-      className={`glass-card p-3 rounded-2xl border transition-all flex flex-col justify-between ${
+      className={`glass-card p-3.5 rounded-2xl border-[3px] border-black shadow-[4px_4px_0px_0px_#000000] transition-all flex flex-col justify-between ${
         isFinal
-          ? 'border-amber-500/40 bg-amber-500/5 ring-1 ring-amber-500/20 shadow-md'
+          ? 'bg-[#FFF9DB] dark:bg-amber-950/30'
           : isCompleted
-          ? 'border-emerald-500/30 bg-emerald-500/5'
+          ? 'bg-[#ECFDF5] dark:bg-emerald-950/30'
           : match.status === 'in_progress'
-          ? 'border-indigo-500/40 ring-1 ring-indigo-500/30 shadow-md'
-          : 'border-slate-200/80 dark:border-slate-800'
+          ? 'bg-[#E0F2FE] dark:bg-indigo-950/40'
+          : 'bg-white dark:bg-slate-900'
       }`}
     >
       {/* 카드 상단 정보 */}
-      <div className="flex items-center justify-between text-xs mb-2">
-        <div className="flex items-center gap-1.5 font-bold flex-wrap">
+      <div className="flex items-center justify-between text-xs mb-2.5 pb-1.5 border-b-2 border-black">
+        <div className="flex items-center gap-1.5 font-black flex-wrap">
           <span
-            className={`px-2 py-0.5 rounded-md text-[11px] ${
+            className={`px-2 py-0.5 rounded-md text-[11px] border-2 border-black shadow-[2px_2px_0px_0px_#000] ${
               isFinal
-                ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 font-black'
-                : 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
+                ? 'bg-[#FFE600] text-black font-black'
+                : 'bg-[#38BDF8] text-black font-black'
             }`}
           >
             {match.bracketLabel || match.round}
           </span>
           <span
-            className={`text-[10px] font-black flex items-center gap-0.5 px-1.5 py-0.5 rounded-md border ${
-              isFinal
-                ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30'
-                : 'bg-slate-200/60 dark:bg-slate-800/80 text-amber-600 dark:text-amber-400 border-slate-300/40 dark:border-slate-700/60'
-            }`}
+            className="text-[10px] font-black flex items-center gap-0.5 px-1.5 py-0.5 rounded-md border-2 border-black bg-[#FFE600] text-black shadow-[1.5px_1.5px_0px_0px_#000]"
             title="공식 배점 기준"
           >
-            <Award className="w-3 h-3 text-amber-500 shrink-0" />
+            <Award className="w-3 h-3 text-black stroke-[2.5] shrink-0" />
             <span>{getTournamentRoundPoints(match.sport, match.round).badgeText}</span>
           </span>
         </div>
 
         <div>
           {isScorerMode ? (
-            <div className="flex items-center gap-0.5 bg-slate-200/70 dark:bg-slate-800/90 rounded-lg p-0.5 border border-slate-300 dark:border-slate-700 text-[10px]">
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 border-2 border-black shadow-[2px_2px_0px_0px_#000] text-[10px]">
               <button
                 type="button"
                 onClick={() => onStatusUpdate && onStatusUpdate(match.id, 'scheduled')}
-                className={`px-1.5 py-0.5 rounded transition-all font-semibold ${
+                className={`px-1.5 py-0.5 rounded transition-all font-black ${
                   match.status === 'scheduled'
-                    ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-xs font-bold'
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
+                    ? 'bg-[#FFE600] text-black border border-black'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-black'
                 }`}
                 title="상태를 '대기중'으로 변경"
               >
@@ -910,10 +904,10 @@ function BracketMatchCard({
               <button
                 type="button"
                 onClick={() => onStatusUpdate && onStatusUpdate(match.id, 'in_progress')}
-                className={`px-1.5 py-0.5 rounded transition-all font-semibold ${
+                className={`px-1.5 py-0.5 rounded transition-all font-black ${
                   match.status === 'in_progress'
-                    ? 'bg-indigo-600 text-white shadow-xs font-bold'
-                    : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'
+                    ? 'bg-[#38BDF8] text-black border border-black'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-black'
                 }`}
                 title="상태를 '진행중'으로 변경"
               >
@@ -922,10 +916,10 @@ function BracketMatchCard({
               <button
                 type="button"
                 onClick={() => onStatusUpdate && onStatusUpdate(match.id, 'completed')}
-                className={`px-1.5 py-0.5 rounded transition-all font-semibold ${
+                className={`px-1.5 py-0.5 rounded transition-all font-black ${
                   match.status === 'completed'
-                    ? 'bg-emerald-600 text-white shadow-xs font-bold'
-                    : 'text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400'
+                    ? 'bg-[#00E599] text-black border border-black'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-black'
                 }`}
                 title="상태를 '종료'로 변경"
               >
@@ -933,15 +927,15 @@ function BracketMatchCard({
               </button>
             </div>
           ) : isCompleted ? (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-black flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3" /> 종료
+            <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#00E599] text-black border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] font-black flex items-center gap-1">
+              <CheckCircle2 className="w-3 h-3 stroke-[2.5]" /> 종료
             </span>
           ) : match.status === 'in_progress' ? (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" /> 진행중
+            <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#38BDF8] text-black border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] font-black flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-black animate-ping" /> 진행중
             </span>
           ) : (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200/80 dark:bg-slate-700/80 text-slate-500 font-medium">
+            <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-200 text-black border-2 border-black font-black">
               대기중
             </span>
           )}
@@ -952,66 +946,60 @@ function BracketMatchCard({
       <div className="space-y-2 my-1">
         {/* === Team A === */}
         <div
-          className={`p-2 rounded-xl flex items-center justify-between transition-all border ${
+          className={`p-2 rounded-xl flex items-center justify-between transition-all border-2 border-black ${
             isTeamAWinner
-              ? 'bg-gradient-to-r from-emerald-500/25 via-teal-500/15 to-emerald-500/10 border-emerald-500 text-emerald-950 dark:text-emerald-100 font-black shadow-sm ring-1 ring-emerald-500/40'
+              ? 'bg-[#00E599] text-black font-black shadow-[3px_3px_0px_0px_#000000]'
               : isTeamBWinner
-              ? 'opacity-40 bg-slate-100/40 dark:bg-slate-800/30 border-transparent text-slate-400'
-              : 'bg-slate-100/80 dark:bg-slate-800/60 border-slate-200/50 dark:border-slate-700/50 text-slate-800 dark:text-slate-100'
+              ? 'opacity-50 bg-slate-100 dark:bg-slate-800/40 text-slate-500'
+              : 'bg-white dark:bg-slate-800 text-black dark:text-white shadow-[2px_2px_0px_0px_#000000]'
           }`}
         >
           {/* 반 이름 (왼쪽) */}
           <div className="flex items-center gap-1.5 truncate mr-2">
             {isTeamAWinner && (
-              <Trophy className="w-4 h-4 text-amber-500 fill-amber-400 shrink-0 animate-bounce" />
+              <Trophy className="w-4 h-4 text-black fill-[#FFE600] shrink-0 animate-bounce" />
             )}
             <span
               className={`text-xs truncate ${
                 isTeamAWinner
-                  ? 'font-black text-emerald-700 dark:text-emerald-300'
+                  ? 'font-black text-black'
                   : isPlaceHolderA
-                  ? 'text-slate-400 font-normal italic'
-                  : 'font-bold'
+                  ? 'text-slate-400 font-bold italic'
+                  : 'font-black'
               }`}
             >
               {match.teamA.name}
             </span>
             {isTeamAWinner && (
-              <span className="text-[9px] bg-emerald-500 text-white font-black px-1.5 py-0.2 rounded-full shrink-0">
+              <span className="text-[9px] bg-[#FFE600] text-black border border-black font-black px-1.5 py-0.2 rounded shrink-0">
                 {isFinal ? '우승' : '승리'}
               </span>
             )}
           </div>
 
-          {/* 반 이름 오른쪽 점수 컨트롤/조회 (사용자 요구사항!) */}
+          {/* 반 이름 오른쪽 점수 컨트롤/조회 */}
           <div className="flex items-center gap-1 shrink-0">
             {isScorerMode ? (
-              <div className="flex items-center gap-1 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded-lg border border-slate-300 dark:border-slate-700 shadow-xs">
+              <div className="flex items-center gap-1 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_#000]">
                 <button
                   type="button"
                   onClick={() => onScoreUpdate && onScoreUpdate(match.id, 'A', -1)}
                   disabled={match.scoreA <= 0}
-                  className="w-5 h-5 flex items-center justify-center rounded text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-25"
+                  className="w-5 h-5 flex items-center justify-center rounded text-black dark:text-white hover:bg-[#FF5C8D] hover:text-black disabled:opacity-25 font-black"
                   title="1점 감점"
                 >
-                  <Minus className="w-3 h-3" />
+                  <Minus className="w-3 h-3 stroke-[3]" />
                 </button>
-                <span
-                  className={`w-6 text-center text-xs font-black ${
-                    isTeamAWinner
-                      ? 'text-emerald-600 dark:text-emerald-400'
-                      : 'text-slate-900 dark:text-white'
-                  }`}
-                >
+                <span className="w-6 text-center text-xs font-black text-black dark:text-white">
                   {match.scoreA}
                 </span>
                 <button
                   type="button"
                   onClick={() => onScoreUpdate && onScoreUpdate(match.id, 'A', 1)}
-                  className="w-5 h-5 flex items-center justify-center rounded text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950 font-bold"
+                  className="w-5 h-5 flex items-center justify-center rounded text-black dark:text-white hover:bg-[#FFE600] hover:text-black font-black"
                   title="1점 추가"
                 >
-                  <Plus className="w-3 h-3" />
+                  <Plus className="w-3 h-3 stroke-[3]" />
                 </button>
 
                 {/* 우승/승리 결정 버튼 */}
@@ -1019,7 +1007,7 @@ function BracketMatchCard({
                   <button
                     type="button"
                     onClick={() => onFinish(match, 'teamA')}
-                    className="ml-1 px-2 py-0.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black shadow-xs whitespace-nowrap"
+                    className="ml-1 px-2 py-0.5 rounded bg-[#FFE600] hover:bg-[#00E599] text-black border-[1.5px] border-black text-[10px] font-black whitespace-nowrap"
                     title="승리 확정 (다음 라운드 진출)"
                   >
                     승리
@@ -1029,10 +1017,10 @@ function BracketMatchCard({
             ) : (
               /* 학생용 조회 전용 점수 뱃지 */
               <span
-                className={`px-2.5 py-0.5 rounded-lg text-xs font-black ${
+                className={`px-2.5 py-0.5 rounded-lg text-xs font-black border-2 border-black ${
                   isTeamAWinner
-                    ? 'bg-emerald-500 text-white shadow-xs'
-                    : 'bg-slate-200/80 dark:bg-slate-700/80 text-slate-800 dark:text-slate-200'
+                    ? 'bg-[#FFE600] text-black shadow-[1.5px_1.5px_0px_0px_#000]'
+                    : 'bg-slate-100 dark:bg-slate-700 text-black dark:text-white'
                 }`}
               >
                 {match.scoreA}
@@ -1043,32 +1031,32 @@ function BracketMatchCard({
 
         {/* === Team B === */}
         <div
-          className={`p-2 rounded-xl flex items-center justify-between transition-all border ${
+          className={`p-2 rounded-xl flex items-center justify-between transition-all border-2 border-black ${
             isTeamBWinner
-              ? 'bg-gradient-to-r from-emerald-500/25 via-teal-500/15 to-emerald-500/10 border-emerald-500 text-emerald-950 dark:text-emerald-100 font-black shadow-sm ring-1 ring-emerald-500/40'
+              ? 'bg-[#00E599] text-black font-black shadow-[3px_3px_0px_0px_#000000]'
               : isTeamAWinner
-              ? 'opacity-40 bg-slate-100/40 dark:bg-slate-800/30 border-transparent text-slate-400'
-              : 'bg-slate-100/80 dark:bg-slate-800/60 border-slate-200/50 dark:border-slate-700/50 text-slate-800 dark:text-slate-100'
+              ? 'opacity-50 bg-slate-100 dark:bg-slate-800/40 text-slate-500'
+              : 'bg-white dark:bg-slate-800 text-black dark:text-white shadow-[2px_2px_0px_0px_#000000]'
           }`}
         >
           {/* 반 이름 (왼쪽) */}
           <div className="flex items-center gap-1.5 truncate mr-2">
             {isTeamBWinner && (
-              <Trophy className="w-4 h-4 text-amber-500 fill-amber-400 shrink-0 animate-bounce" />
+              <Trophy className="w-4 h-4 text-black fill-[#FFE600] shrink-0 animate-bounce" />
             )}
             <span
               className={`text-xs truncate ${
                 isTeamBWinner
-                  ? 'font-black text-emerald-700 dark:text-emerald-300'
+                  ? 'font-black text-black'
                   : isPlaceHolderB
-                  ? 'text-slate-400 font-normal italic'
-                  : 'font-bold'
+                  ? 'text-slate-400 font-bold italic'
+                  : 'font-black'
               }`}
             >
               {match.teamB.name}
             </span>
             {isTeamBWinner && (
-              <span className="text-[9px] bg-emerald-500 text-white font-black px-1.5 py-0.2 rounded-full shrink-0">
+              <span className="text-[9px] bg-[#FFE600] text-black border border-black font-black px-1.5 py-0.2 rounded shrink-0">
                 {isFinal ? '우승' : '승리'}
               </span>
             )}
@@ -1077,32 +1065,26 @@ function BracketMatchCard({
           {/* 반 이름 오른쪽 점수 컨트롤/조회 */}
           <div className="flex items-center gap-1 shrink-0">
             {isScorerMode ? (
-              <div className="flex items-center gap-1 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded-lg border border-slate-300 dark:border-slate-700 shadow-xs">
+              <div className="flex items-center gap-1 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_#000]">
                 <button
                   type="button"
                   onClick={() => onScoreUpdate && onScoreUpdate(match.id, 'B', -1)}
                   disabled={match.scoreB <= 0}
-                  className="w-5 h-5 flex items-center justify-center rounded text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-25"
+                  className="w-5 h-5 flex items-center justify-center rounded text-black dark:text-white hover:bg-[#FF5C8D] hover:text-black disabled:opacity-25 font-black"
                   title="1점 감점"
                 >
-                  <Minus className="w-3 h-3" />
+                  <Minus className="w-3 h-3 stroke-[3]" />
                 </button>
-                <span
-                  className={`w-6 text-center text-xs font-black ${
-                    isTeamBWinner
-                      ? 'text-emerald-600 dark:text-emerald-400'
-                      : 'text-slate-900 dark:text-white'
-                  }`}
-                >
+                <span className="w-6 text-center text-xs font-black text-black dark:text-white">
                   {match.scoreB}
                 </span>
                 <button
                   type="button"
                   onClick={() => onScoreUpdate && onScoreUpdate(match.id, 'B', 1)}
-                  className="w-5 h-5 flex items-center justify-center rounded text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950 font-bold"
+                  className="w-5 h-5 flex items-center justify-center rounded text-black dark:text-white hover:bg-[#FFE600] hover:text-black font-black"
                   title="1점 추가"
                 >
-                  <Plus className="w-3 h-3" />
+                  <Plus className="w-3 h-3 stroke-[3]" />
                 </button>
 
                 {/* 우승/승리 결정 버튼 */}
@@ -1110,7 +1092,7 @@ function BracketMatchCard({
                   <button
                     type="button"
                     onClick={() => onFinish(match, 'teamB')}
-                    className="ml-1 px-2 py-0.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black shadow-xs whitespace-nowrap"
+                    className="ml-1 px-2 py-0.5 rounded bg-[#FFE600] hover:bg-[#00E599] text-black border-[1.5px] border-black text-[10px] font-black whitespace-nowrap"
                     title="승리 확정 (다음 라운드 진출)"
                   >
                     승리
@@ -1120,10 +1102,10 @@ function BracketMatchCard({
             ) : (
               /* 학생용 조회 전용 점수 뱃지 */
               <span
-                className={`px-2.5 py-0.5 rounded-lg text-xs font-black ${
+                className={`px-2.5 py-0.5 rounded-lg text-xs font-black border-2 border-black ${
                   isTeamBWinner
-                    ? 'bg-emerald-500 text-white shadow-xs'
-                    : 'bg-slate-200/80 dark:bg-slate-700/80 text-slate-800 dark:text-slate-200'
+                    ? 'bg-[#FFE600] text-black shadow-[1.5px_1.5px_0px_0px_#000]'
+                    : 'bg-slate-100 dark:bg-slate-700 text-black dark:text-white'
                 }`}
               >
                 {match.scoreB}
@@ -1134,22 +1116,22 @@ function BracketMatchCard({
       </div>
 
       {/* 카드 하단 정보 및 취소 버튼 */}
-      <div className="flex items-center justify-between text-[10px] text-slate-400 mt-2 pt-1 border-t border-slate-200/40 dark:border-slate-800/60">
+      <div className="flex items-center justify-between text-[10px] font-black text-slate-700 dark:text-slate-300 mt-2 pt-1.5 border-t-2 border-black">
         <span className="flex items-center gap-1 truncate">
-          <MapPin className="w-3 h-3 shrink-0" /> {match.court}
+          <MapPin className="w-3 h-3 shrink-0 stroke-[2.5]" /> {match.court}
         </span>
         <div className="flex items-center gap-2 shrink-0">
           <span className="flex items-center gap-1">
-            <Clock className="w-3 h-3" /> {match.time}
+            <Clock className="w-3 h-3 stroke-[2.5]" /> {match.time}
           </span>
           {isScorerMode && isCompleted && (
             <button
               type="button"
               onClick={() => onCancel && onCancel(match.id)}
-              className="text-rose-500 hover:underline font-bold text-[10px] flex items-center gap-0.5 ml-1"
+              className="px-1.5 py-0.5 rounded bg-[#FF5C8D] text-black border border-black font-black text-[10px] flex items-center gap-0.5 ml-1"
               title="경기 완료 취소 및 재개"
             >
-              <RotateCcw className="w-2.5 h-2.5" /> 취소
+              <RotateCcw className="w-2.5 h-2.5 stroke-[2.5]" /> 취소
             </button>
           )}
         </div>
@@ -1177,60 +1159,48 @@ function ChampionCard({
 
   if (championTeam && championTeam.classNum > 0) {
     return (
-      <div className="glass-card p-4 rounded-2xl border-2 border-amber-500/50 bg-gradient-to-br from-amber-500/15 via-purple-500/10 to-indigo-500/15 text-center flex flex-col items-center justify-center gap-2.5 shadow-xl animate-fadeIn">
-        <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-amber-400 to-amber-600 flex items-center justify-center text-white shadow-lg shadow-amber-500/40 animate-bounce">
-          <Trophy className="w-8 h-8" />
+      <div className="p-4 rounded-2xl border-[3px] border-black bg-[#FFE600] text-black shadow-[5px_5px_0px_0px_#000000] text-center flex flex-col items-center justify-center gap-2.5 animate-fadeIn">
+        <div className="w-14 h-14 rounded-2xl bg-[#FF5C8D] border-[3px] border-black shadow-[3px_3px_0px_0px_#000000] flex items-center justify-center text-black animate-bounce">
+          <Trophy className="w-8 h-8 stroke-[2.5]" />
         </div>
         <div>
-          <span className="text-[11px] font-extrabold text-amber-500 tracking-wider">
+          <span className="text-[11px] font-black bg-black text-[#FFE600] px-2.5 py-0.5 rounded-md tracking-wider">
             {grade}학년 {sportName} 1위 우승
           </span>
-          <h3 className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
+          <h3 className="text-xl font-black text-black mt-1">
             {championTeam.name}
           </h3>
           {podium.first && (
-            <span className="text-xs font-black text-amber-600 dark:text-amber-400">
+            <span className="inline-block mt-1 px-2.5 py-0.5 rounded-lg bg-white text-black border-2 border-black font-black text-xs shadow-[2px_2px_0px_0px_#000]">
               +{podium.first.points}pt 획득
             </span>
           )}
         </div>
 
         {/* 2위, 3위(1위팀과 준결승 대결), 4위(2위팀과 준결승 대결) 요약 */}
-        <div className="w-full pt-2 mt-1 border-t border-amber-500/20 text-[11px] space-y-1 text-left">
+        <div className="w-full pt-2.5 mt-1 border-t-[2.5px] border-black text-[11px] space-y-1.5 text-left">
           {podium.second && (
-            <div className="flex items-center justify-between px-2 py-1 rounded-lg bg-slate-200/60 dark:bg-slate-800/60">
-              <span className="font-bold text-slate-700 dark:text-slate-200">
-                🥈 2위: {podium.second.name}
-              </span>
-              <span className="font-black text-slate-600 dark:text-slate-300">
-                +{podium.second.points}pt
-              </span>
+            <div className="flex items-center justify-between px-2.5 py-1 rounded-lg bg-white border-2 border-black font-black text-black">
+              <span>🥈 2위: {podium.second.name}</span>
+              <span>+{podium.second.points}pt</span>
             </div>
           )}
           {podium.third && (
             <div
-              className="flex items-center justify-between px-2 py-1 rounded-lg bg-orange-500/15 border border-orange-500/30"
+              className="flex items-center justify-between px-2.5 py-1 rounded-lg bg-[#00E599] border-2 border-black font-black text-black"
               title="대진표 상 1위 우승팀에게 준결승(4강)에서 진 학급"
             >
-              <span className="font-bold text-orange-700 dark:text-orange-300">
-                🥉 3위: {podium.third.name}
-              </span>
-              <span className="font-black text-orange-600 dark:text-orange-400">
-                +{podium.third.points}pt
-              </span>
+              <span>🥉 3위: {podium.third.name}</span>
+              <span>+{podium.third.points}pt</span>
             </div>
           )}
           {podium.fourth && (
             <div
-              className="flex items-center justify-between px-2 py-1 rounded-lg bg-slate-100/70 dark:bg-slate-800/40"
+              className="flex items-center justify-between px-2.5 py-1 rounded-lg bg-[#E0F2FE] border-2 border-black font-bold text-black"
               title="대진표 상 2위 준우승팀에게 준결승(4강)에서 진 학급"
             >
-              <span className="font-medium text-slate-600 dark:text-slate-400">
-                4위: {podium.fourth.name}
-              </span>
-              <span className="font-bold text-slate-500">
-                +{podium.fourth.points}pt
-              </span>
+              <span>4위: {podium.fourth.name}</span>
+              <span>+{podium.fourth.points}pt</span>
             </div>
           )}
         </div>
@@ -1239,15 +1209,15 @@ function ChampionCard({
   }
 
   return (
-    <div className="glass-card p-5 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 text-center flex flex-col items-center justify-center gap-2 opacity-80">
-      <div className="w-12 h-12 rounded-full bg-slate-200/70 dark:bg-slate-800 flex items-center justify-center text-slate-400">
-        <Trophy className="w-6 h-6" />
+    <div className="glass-card p-5 rounded-2xl border-[3px] border-dashed border-black bg-[#FAF7F0] dark:bg-slate-800 text-center flex flex-col items-center justify-center gap-2 shadow-[4px_4px_0px_0px_#000000]">
+      <div className="w-12 h-12 rounded-2xl bg-[#FFE600] border-2 border-black shadow-[2px_2px_0px_0px_#000] flex items-center justify-center text-black">
+        <Trophy className="w-6 h-6 stroke-[2.5]" />
       </div>
       <div>
-        <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300">
+        <h4 className="text-xs font-black text-black dark:text-white">
           {grade}학년 {sportName} 챔피언
         </h4>
-        <p className="text-[11px] text-slate-400 mt-0.5">
+        <p className="text-[11px] font-bold text-slate-600 dark:text-slate-300 mt-0.5">
           결승전 완료 시 1위~4위(3위: 1위에게 4강 패배 반)가 자동 확정됩니다!
         </p>
       </div>
