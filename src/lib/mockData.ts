@@ -1033,13 +1033,6 @@ export function generateCleanGradeScores(): GradeScore[] {
   ];
 }
 
-// 학년별 총점 (1학년 5팀, 2학년 7팀, 3학년 6팀)
-export const INITIAL_GRADE_SCORES: GradeScore[] = [
-  { grade: 1, totalScore: 970, goldMedals: 2, silverMedals: 2, bronzeMedals: 1, classesCount: 5 },
-  { grade: 2, totalScore: 1470, goldMedals: 3, silverMedals: 3, bronzeMedals: 3, classesCount: 7 },
-  { grade: 3, totalScore: 1430, goldMedals: 4, silverMedals: 3, bronzeMedals: 2, classesCount: 6 },
-];
-
 export function generateCleanClassRankings(): ClassRanking[] {
   const rankings: ClassRanking[] = [];
   const grades = [
@@ -1064,28 +1057,6 @@ export function generateCleanClassRankings(): ClassRanking[] {
   return rankings;
 }
 
-// 총 18개 학급 종합 순위표 (1학년 1~5반, 2학년 1~7반, 3학년 1~6반)
-export const INITIAL_CLASS_RANKINGS: ClassRanking[] = [
-  { rank: 1, grade: 3, classNum: 1, score: 380, wins: 4, losses: 0 },
-  { rank: 2, grade: 2, classNum: 2, score: 350, wins: 3, losses: 1 },
-  { rank: 3, grade: 3, classNum: 4, score: 320, wins: 3, losses: 1 },
-  { rank: 4, grade: 1, classNum: 3, score: 290, wins: 3, losses: 1 },
-  { rank: 5, grade: 2, classNum: 7, score: 270, wins: 2, losses: 1 },
-  { rank: 6, grade: 3, classNum: 6, score: 250, wins: 2, losses: 1 },
-  { rank: 7, grade: 1, classNum: 5, score: 240, wins: 2, losses: 1 },
-  { rank: 8, grade: 2, classNum: 5, score: 220, wins: 2, losses: 2 },
-  { rank: 9, grade: 2, classNum: 1, score: 200, wins: 2, losses: 1 },
-  { rank: 10, grade: 3, classNum: 2, score: 190, wins: 1, losses: 2 },
-  { rank: 11, grade: 1, classNum: 1, score: 180, wins: 1, losses: 2 },
-  { rank: 12, grade: 2, classNum: 4, score: 170, wins: 1, losses: 2 },
-  { rank: 13, grade: 3, classNum: 3, score: 160, wins: 1, losses: 2 },
-  { rank: 14, grade: 1, classNum: 2, score: 150, wins: 1, losses: 2 },
-  { rank: 15, grade: 2, classNum: 3, score: 140, wins: 1, losses: 2 },
-  { rank: 16, grade: 3, classNum: 5, score: 130, wins: 1, losses: 3 },
-  { rank: 17, grade: 2, classNum: 6, score: 120, wins: 0, losses: 3 },
-  { rank: 18, grade: 1, classNum: 4, score: 110, wins: 0, losses: 3 },
-];
-
 // ==========================================
 // 종목별 각 반별 포인트 계산 함수군 (실시간 연동)
 // ==========================================
@@ -1100,8 +1071,8 @@ export function calcTournamentPoints(
   const gradeMatches = matches.filter((m) => m.sport === sportId && m.grade === grade);
   const finalMatch = gradeMatches.find((m) => m.round === '결승');
 
-  // 1. 결승전 완료된 경우
-  if (finalMatch && finalMatch.status === 'completed') {
+  // 1. 결승전 완료된 경우: 1위(우승) 및 2위(준우승) 판정
+  if (finalMatch && finalMatch.status === 'completed' && finalMatch.winnerTeam) {
     if (
       (finalMatch.winnerTeam === 'teamA' && finalMatch.teamA.classNum === classNum) ||
       (finalMatch.winnerTeam === 'teamB' && finalMatch.teamB.classNum === classNum)
@@ -1124,7 +1095,9 @@ export function calcTournamentPoints(
     return table[1]; // 최소 2등 준우승 배점 확보
   }
 
-  // 3. 4강전에서 탈락한 팀 확인
+  // 3. 4강(준결승)에서 탈락한 팀 확인
+  // 규칙: 대진표 상 1위(결승 우승팀)에게 준결승(4강)에서 진 팀에게 3위 점수(table[2]) 부여,
+  // 2위(결승 준우승팀)에게 준결승(4강)에서 진 팀에게 4위 점수(table[3]) 부여
   const semiMatches = gradeMatches.filter((m) => m.round === '4강');
   const lostSemi = semiMatches.find(
     (m) =>
@@ -1134,29 +1107,31 @@ export function calcTournamentPoints(
   );
 
   if (lostSemi) {
-    // 4강 탈락팀들 간의 3등 vs 4등 배점 산정
-    const completedSemiLosers = semiMatches
-      .filter((m) => m.status === 'completed')
-      .map((m) => {
-        const isA = m.winnerTeam === 'teamA';
-        const loserClass = isA ? m.teamB.classNum : m.teamA.classNum;
-        const loserScore = isA ? m.scoreB : m.scoreA;
-        const winnerScore = isA ? m.scoreA : m.scoreB;
-        return {
-          classNum: loserClass,
-          diff: loserScore - winnerScore,
-          score: loserScore,
-        };
-      })
-      .sort((a, b) => (b.diff !== a.diff ? b.diff - a.diff : b.score - a.score));
+    const semiWinnerClass =
+      lostSemi.winnerTeam === 'teamA'
+        ? lostSemi.teamA.classNum
+        : lostSemi.teamB.classNum;
 
-    const loserIndex = completedSemiLosers.findIndex((l) => l.classNum === classNum);
-    if (loserIndex === 0) {
-      return table[2]; // 3위 배점
-    } else if (loserIndex === 1) {
-      return table[3]; // 4위 배점
+    if (finalMatch && finalMatch.status === 'completed' && finalMatch.winnerTeam) {
+      const championClass =
+        finalMatch.winnerTeam === 'teamA'
+          ? finalMatch.teamA.classNum
+          : finalMatch.teamB.classNum;
+
+      const lostToChampion =
+        (semiWinnerClass > 0 && semiWinnerClass === championClass) ||
+        (finalMatch.winnerTeam === 'teamA' && finalMatch.sourceMatchAId === lostSemi.id) ||
+        (finalMatch.winnerTeam === 'teamB' && finalMatch.sourceMatchBId === lostSemi.id);
+
+      if (lostToChampion) {
+        return table[2]; // 3위 배점 (대진표 상 1위에게 준결승에서 진 팀)
+      } else {
+        return table[3]; // 4위 배점 (대진표 상 2위에게 준결승에서 진 팀)
+      }
     }
-    return table[2];
+
+    // 결승전이 아직 완료되지 않은 상태에서는 최소 4위 배점(table[3]) 확보 (결승 완료 시 1위에게 진 팀은 3위 배점으로 자동 승격)
+    return table[3];
   }
 
   // 4강 승리팀 (아직 결승 카드에 반영되기 전이라도 최소 2위 확보)
@@ -1197,6 +1172,59 @@ export function calcTournamentPoints(
   return 0; // 아직 경기 미진행 또는 대기중
 }
 
+export function getTournamentRankingsForGrade(
+  sportId: string,
+  grade: number,
+  matches: Match[]
+): {
+  first?: { classNum: number; name: string; points: number };
+  second?: { classNum: number; name: string; points: number };
+  third?: { classNum: number; name: string; points: number };
+  fourth?: { classNum: number; name: string; points: number };
+} {
+  const table = SPORT_RANK_POINTS_TABLE[sportId] || [150, 130, 110, 90, 70, 70, 70];
+  const gradeMatches = matches.filter((m) => m.sport === sportId && m.grade === grade);
+  const finalMatch = gradeMatches.find((m) => m.round === '결승');
+
+  if (!finalMatch || finalMatch.status !== 'completed' || !finalMatch.winnerTeam) {
+    return {};
+  }
+
+  const isAWinner = finalMatch.winnerTeam === 'teamA';
+  const champTeam = isAWinner ? finalMatch.teamA : finalMatch.teamB;
+  const runnerUpTeam = isAWinner ? finalMatch.teamB : finalMatch.teamA;
+
+  const result: {
+    first?: { classNum: number; name: string; points: number };
+    second?: { classNum: number; name: string; points: number };
+    third?: { classNum: number; name: string; points: number };
+    fourth?: { classNum: number; name: string; points: number };
+  } = {
+    first: { classNum: champTeam.classNum, name: champTeam.name, points: table[0] },
+    second: { classNum: runnerUpTeam.classNum, name: runnerUpTeam.name, points: table[1] },
+  };
+
+  const semiMatches = gradeMatches.filter((m) => m.round === '4강' && m.status === 'completed');
+  semiMatches.forEach((sm) => {
+    const smWinner = sm.winnerTeam === 'teamA' ? sm.teamA : sm.teamB;
+    const smLoser = sm.winnerTeam === 'teamA' ? sm.teamB : sm.teamA;
+    if (smLoser.classNum <= 0) return;
+
+    const isChampSemi =
+      (smWinner.classNum > 0 && smWinner.classNum === champTeam.classNum) ||
+      (isAWinner && finalMatch.sourceMatchAId === sm.id) ||
+      (!isAWinner && finalMatch.sourceMatchBId === sm.id);
+
+    if (isChampSemi) {
+      result.third = { classNum: smLoser.classNum, name: smLoser.name, points: table[2] };
+    } else {
+      result.fourth = { classNum: smLoser.classNum, name: smLoser.name, points: table[3] };
+    }
+  });
+
+  return result;
+}
+
 export function calcRankingSportPoints(
   sportId: string,
   grade: number,
@@ -1233,17 +1261,36 @@ export function calcClassSportScoreDetail(
   if (isTournamentSport(sportId)) {
     const score = calcTournamentPoints(sportId, grade, classNum, matches);
     const table = SPORT_RANK_POINTS_TABLE[sportId] || [150, 130, 110, 90, 70, 70, 70];
+    const gradeMatches = matches.filter((m) => m.sport === sportId && m.grade === grade);
+    const finalMatch = gradeMatches.find((m) => m.round === '결승');
+    const semiMatches = gradeMatches.filter((m) => m.round === '4강');
+    const lostSemi = semiMatches.find(
+      (m) =>
+        m.status === 'completed' &&
+        ((m.winnerTeam === 'teamA' && m.teamB.classNum === classNum) ||
+          (m.winnerTeam === 'teamB' && m.teamA.classNum === classNum))
+    );
+
     if (score === table[0] && score > 0) {
       return { score, detail: `🥇 1위 우승 (${score}pt)`, badge: '우승' };
     }
     if (score === table[1]) {
-      return { score, detail: `🥈 2위 준우승 (${score}pt)`, badge: '준우승' };
+      if (finalMatch && finalMatch.status === 'completed') {
+        return { score, detail: `🥈 2위 준우승 (${score}pt)`, badge: '준우승' };
+      }
+      return { score, detail: `결승 진출 확보 (${score}pt)`, badge: '결승진출' };
     }
     if (score === table[2]) {
-      return { score, detail: `🥉 3위 (${score}pt)`, badge: '3위' };
+      return { score, detail: `🥉 3위 (1위팀과 준결승 대결 • ${score}pt)`, badge: '3위' };
     }
     if (score === table[3]) {
-      return { score, detail: `4위 (${score}pt)`, badge: '4위' };
+      if (lostSemi) {
+        if (finalMatch && finalMatch.status === 'completed') {
+          return { score, detail: `4위 (2위팀과 준결승 대결 • ${score}pt)`, badge: '4위' };
+        }
+        return { score, detail: `4강 진출 (결승 후 3·4위 확정 • ${score}pt)`, badge: '3·4위대기' };
+      }
+      return { score, detail: `4강 진출 확보 (${score}pt)`, badge: '4강진출' };
     }
     if (score === table[4]) {
       return { score, detail: `예선/8강 참가 (${score}pt)`, badge: '참가' };
@@ -1266,7 +1313,7 @@ export function calcClassSportScoreDetail(
   }
 }
 
-// 18개 학급 및 3개 학년 종합 점수/순위 일괄 재계산 함수
+// 18개 학급 및 3개 학년 종합 점수/순위 일괄 재계산 함수 (종목별 각 반별 포인트 계산표 합산 연동)
 export function recalculateAllScores(
   matches: Match[],
   sportRankings: SportRankingEntry[]
@@ -1328,10 +1375,12 @@ export function recalculateAllScores(
     });
   });
 
-  // 점수 내림차순, 승수 내림차순 정렬 후 순위 부여
+  // 점수 내림차순, 승수 내림차순, 학년/반 오름차순 정렬 후 순위 부여
   classRankings.sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
-    return b.wins - a.wins;
+    if (b.wins !== a.wins) return b.wins - a.wins;
+    if (a.grade !== b.grade) return a.grade - b.grade;
+    return a.classNum - b.classNum;
   });
   classRankings.forEach((cr, idx) => {
     cr.rank = idx + 1;
@@ -1346,6 +1395,7 @@ export function recalculateAllScores(
         if (finalMatch && finalMatch.status === 'completed') {
           gradeTotals[g].gold++;
           gradeTotals[g].silver++;
+          gradeTotals[g].bronze++;
         }
       });
     } else {
@@ -1367,6 +1417,12 @@ export function recalculateAllScores(
 
   return { classRankings, gradeScores };
 }
+
+// 초기 학급 종합 순위표 및 학년 점수를 포인트 계산표(recalculateAllScores) 결과로 100% 일치시켜 초기화
+const INITIAL_CALCULATED_SCORES = recalculateAllScores(INITIAL_MATCHES, INITIAL_SPORT_RANKINGS);
+export const INITIAL_GRADE_SCORES: GradeScore[] = INITIAL_CALCULATED_SCORES.gradeScores;
+export const INITIAL_CLASS_RANKINGS: ClassRanking[] = INITIAL_CALCULATED_SCORES.classRankings;
+
 
 
 export const INITIAL_POSTS: Post[] = [

@@ -149,6 +149,9 @@ export default function ScoreRulesModal({ isOpen, onClose }: ScoreRulesModalProp
           <p className="pl-5 text-[11px]">
             • <strong>O.X 퀴즈, 물병던지기, 제기차기, 디스크 골프</strong>는 1등(50pt), 2등(40pt), 3등(30pt)만 배점되며 4등 이하는 0pt입니다.
           </p>
+          <p className="pl-5 text-[11px] text-orange-600 dark:text-orange-400 font-semibold">
+            • <strong>토너먼트 3위 산정 기준</strong>: 대진표 상 1위(결승 우승 반)에게 준결승(4강)에서 진 팀에게 3등 점수를 부여하며, 2위(준우승 반)에게 준결승에서 진 팀에게 4등 점수를 부여합니다.
+          </p>
         </div>
       </div>
     </div>

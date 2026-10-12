@@ -27,6 +27,7 @@ import {
   calculateRankPoints,
   getRankPoints,
   getTournamentRoundPoints,
+  getTournamentRankingsForGrade,
   SPORT_COURTS,
   getSportScheduleInfo,
 } from '../lib/mockData';
@@ -111,7 +112,7 @@ export default function MatchesBento({
             </span>
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                실시간 18팀 종목별 대진표 & 경기 현황
+                종목별 대진표 & 경기 현황
               </h2>
               {isScorerMode ? (
                 <span className="text-[10px] bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1">
@@ -269,7 +270,7 @@ export default function MatchesBento({
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  장소: {SPORT_COURTS[selectedSport] || '운동장/트랙'} • 공식 일정표 시간 연동 • 경기 결과에 따라 순위 배점 부여
+                  장소: {SPORT_COURTS[selectedSport] || '운동장/트랙'} • <strong className="text-orange-500 dark:text-orange-400 font-bold">3위 기준: 대진표 상 1위(우승) 반에게 준결승(4강)에서 진 팀에게 3위 점수 부여</strong>
                 </p>
               </div>
 
@@ -281,11 +282,11 @@ export default function MatchesBento({
                 <span className="px-2 py-0.5 rounded-md bg-slate-200/80 dark:bg-slate-700/80 text-slate-700 dark:text-slate-300 font-bold">
                   🥈 2위(준우승) {getRankPoints(selectedSport, 2)}pt
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-orange-500/15 text-orange-600 dark:text-orange-400 font-bold">
-                  🥉 3위(4강) {getRankPoints(selectedSport, 3)}pt
+                <span className="px-2 py-0.5 rounded-md bg-orange-500/15 text-orange-600 dark:text-orange-400 font-bold" title="결승 1위 우승 반에게 준결승(4강)에서 패한 학급">
+                  🥉 3위(1위팀 4강상대) {getRankPoints(selectedSport, 3)}pt
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                  4위(4강) {getRankPoints(selectedSport, 4)}pt
+                <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300" title="결승 2위 준우승 반에게 준결승(4강)에서 패한 학급">
+                  4위(2위팀 4강상대) {getRankPoints(selectedSport, 4)}pt
                 </span>
                 <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">
                   5~7위(기본) {getRankPoints(selectedSport, 5)}pt
@@ -503,6 +504,7 @@ function Grade1TournamentTree({
             championTeam={championTeam}
             grade={1}
             sportName={sportName}
+            matches={matches}
           />
         </div>
       </div>
@@ -663,6 +665,7 @@ function Grade2TournamentTree({
             championTeam={championTeam}
             grade={2}
             sportName={sportName}
+            matches={matches}
           />
         </div>
       </div>
@@ -815,6 +818,7 @@ function Grade3TournamentTree({
             championTeam={championTeam}
             grade={3}
             sportName={sportName}
+            matches={matches}
           />
         </div>
       </div>
@@ -1161,27 +1165,74 @@ function ChampionCard({
   championTeam,
   grade,
   sportName,
+  matches = [],
 }: {
   championTeam: Match['teamA'] | null;
   grade: number;
   sportName: string;
+  matches?: Match[];
 }) {
+  const sportId = matches[0]?.sport || 'soccer';
+  const podium = getTournamentRankingsForGrade(sportId, grade, matches);
+
   if (championTeam && championTeam.classNum > 0) {
     return (
-      <div className="glass-card p-5 rounded-2xl border-2 border-amber-500/50 bg-gradient-to-br from-amber-500/15 via-purple-500/10 to-indigo-500/15 text-center flex flex-col items-center justify-center gap-2.5 shadow-xl animate-fadeIn">
-        <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-400 to-amber-600 flex items-center justify-center text-white shadow-lg shadow-amber-500/40 animate-bounce">
-          <Trophy className="w-9 h-9" />
+      <div className="glass-card p-4 rounded-2xl border-2 border-amber-500/50 bg-gradient-to-br from-amber-500/15 via-purple-500/10 to-indigo-500/15 text-center flex flex-col items-center justify-center gap-2.5 shadow-xl animate-fadeIn">
+        <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-amber-400 to-amber-600 flex items-center justify-center text-white shadow-lg shadow-amber-500/40 animate-bounce">
+          <Trophy className="w-8 h-8" />
         </div>
         <div>
           <span className="text-[11px] font-extrabold text-amber-500 tracking-wider">
-            {grade}학년 {sportName} 우승
+            {grade}학년 {sportName} 1위 우승
           </span>
-          <h3 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
+          <h3 className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
             {championTeam.name}
           </h3>
+          {podium.first && (
+            <span className="text-xs font-black text-amber-600 dark:text-amber-400">
+              +{podium.first.points}pt 획득
+            </span>
+          )}
         </div>
-        <div className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 font-black text-xs flex items-center gap-1">
-          <Sparkles className="w-3.5 h-3.5" /> 챔피언 트로피 획득!
+
+        {/* 2위, 3위(1위팀과 준결승 대결), 4위(2위팀과 준결승 대결) 요약 */}
+        <div className="w-full pt-2 mt-1 border-t border-amber-500/20 text-[11px] space-y-1 text-left">
+          {podium.second && (
+            <div className="flex items-center justify-between px-2 py-1 rounded-lg bg-slate-200/60 dark:bg-slate-800/60">
+              <span className="font-bold text-slate-700 dark:text-slate-200">
+                🥈 2위: {podium.second.name}
+              </span>
+              <span className="font-black text-slate-600 dark:text-slate-300">
+                +{podium.second.points}pt
+              </span>
+            </div>
+          )}
+          {podium.third && (
+            <div
+              className="flex items-center justify-between px-2 py-1 rounded-lg bg-orange-500/15 border border-orange-500/30"
+              title="대진표 상 1위 우승팀에게 준결승(4강)에서 진 학급"
+            >
+              <span className="font-bold text-orange-700 dark:text-orange-300">
+                🥉 3위: {podium.third.name}
+              </span>
+              <span className="font-black text-orange-600 dark:text-orange-400">
+                +{podium.third.points}pt
+              </span>
+            </div>
+          )}
+          {podium.fourth && (
+            <div
+              className="flex items-center justify-between px-2 py-1 rounded-lg bg-slate-100/70 dark:bg-slate-800/40"
+              title="대진표 상 2위 준우승팀에게 준결승(4강)에서 진 학급"
+            >
+              <span className="font-medium text-slate-600 dark:text-slate-400">
+                4위: {podium.fourth.name}
+              </span>
+              <span className="font-bold text-slate-500">
+                +{podium.fourth.points}pt
+              </span>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -1197,7 +1248,7 @@ function ChampionCard({
           {grade}학년 {sportName} 챔피언
         </h4>
         <p className="text-[11px] text-slate-400 mt-0.5">
-          결승전 완료 시 우승 학급이 자동으로 등극합니다!
+          결승전 완료 시 1위~4위(3위: 1위에게 4강 패배 반)가 자동 확정됩니다!
         </p>
       </div>
     </div>

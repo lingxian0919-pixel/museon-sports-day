@@ -66,6 +66,9 @@ export default function ScoreHero({ classRankings }: ScoreHeroProps) {
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-0.5">
                   체육대회 실시간 종합 리더보드
                 </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  종목별 각 반별 포인트 계산표의 11개 종목 합산 총점이 실시간으로 자동 반영됩니다.
+                </p>
               </div>
 
               {/* Grade Filter Pill Tabs */}
