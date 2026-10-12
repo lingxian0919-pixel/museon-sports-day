@@ -11,12 +11,12 @@ import { useSportsData } from '../lib/useSportsData';
 import { Swords, Eye, Award } from 'lucide-react';
 
 export default function StudentViewerPage() {
-  const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [darkMode, setDarkMode] = useState<boolean>(true);
   const [isBracketOpen, setIsBracketOpen] = useState<boolean>(false);
   const [isScoreRulesOpen, setIsScoreRulesOpen] = useState<boolean>(false);
-  const { matches, classRankings, sportRankings } = useSportsData();
+  const { matches, gradeScores, classRankings, sportRankings } = useSportsData();
 
-  // Initialize theme (Neo-Brutalism light pop mode by default)
+  // Initialize theme from system or default dark
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
@@ -27,29 +27,34 @@ export default function StudentViewerPage() {
 
   return (
     <main className="min-h-screen pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-4 relative">
-      {/* Top Bento Banner: Mode Indicator & Announcements */}
-      <div className="mb-4 glass-card bg-[#00E599] dark:bg-slate-800 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-black dark:text-white border-[3px] border-black shadow-[4px_4px_0px_0px_#000000]">
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <span className="px-2.5 py-1 rounded-lg bg-[#FFE600] text-black border-2 border-black shadow-[2px_2px_0px_0px_#000] font-black text-xs flex items-center gap-1">
-            <Eye className="w-3.5 h-3.5 stroke-[2.5]" /> 학생 참관 화면
+      {/* Background ambient lighting */}
+      <div className="fixed top-0 left-1/4 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-600/15 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="fixed bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 dark:bg-purple-600/15 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="fixed top-2/3 left-1/3 w-80 h-80 bg-emerald-500/10 dark:bg-emerald-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
+
+      {/* Top Banner: Mode Indicator & Announcements */}
+      <div className="mb-4 glass-card px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-700 dark:text-slate-300 border-blue-500/30">
+        <div className="flex items-center gap-2">
+          <span className="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-600 dark:text-blue-400 font-black text-[11px] flex items-center gap-1">
+            <Eye className="w-3.5 h-3.5" /> 학생 참관 화면
           </span>
-          <span className="font-black text-black dark:text-white">
-            실시간 득점 및 18개 반 순위가 자동 반영됩니다. (조회 전용 • 네오 브루탈리즘 벤토 그리드)
+          <span className="truncate">
+            실시간 득점 및 18개 반 순위가 자동 반영됩니다. (조회 전용)
           </span>
         </div>
-        <div className="flex items-center gap-2.5 self-end sm:self-auto shrink-0">
+        <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
           <button
             onClick={() => setIsScoreRulesOpen(true)}
-            className="neo-btn px-3 py-1 rounded-lg bg-[#FF5C8D] hover:bg-[#FFE600] text-black font-black flex items-center gap-1"
+            className="flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400 hover:underline"
           >
-            <Award className="w-3.5 h-3.5 stroke-[2.5]" />
+            <Award className="w-3.5 h-3.5 text-amber-500" />
             <span>종목별 배점표</span>
           </button>
           <button
             onClick={() => setIsBracketOpen(true)}
-            className="neo-btn px-3 py-1 rounded-lg bg-white hover:bg-[#38BDF8] text-black font-black flex items-center gap-1"
+            className="flex items-center gap-1 font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
           >
-            <Swords className="w-3.5 h-3.5 stroke-[2.5]" />
+            <Swords className="w-3.5 h-3.5" />
             <span>대진표 트리</span>
           </button>
         </div>
@@ -63,19 +68,22 @@ export default function StudentViewerPage() {
         isScorerMode={false}
       />
 
-      {/* Modular Bento Grid Container */}
-      <div className="grid grid-cols-1 gap-6">
-        {/* Bento Module 1: Real-time 18 Classes Overall Rankings */}
-        <ScoreHero classRankings={classRankings} />
+      {/* Hero Section: Real-time 18 Classes Overall Rankings */}
+      <ScoreHero
+        classRankings={classRankings}
+      />
 
-        {/* Bento Module 2: Matches and Brackets Bento Section (View-Only) */}
+      {/* Matches and Brackets Bento Section (View-Only) */}
+      <div className="mb-6">
         <MatchesBento
           matches={matches}
           isScorerMode={false}
           sportRankings={sportRankings}
         />
+      </div>
 
-        {/* Bento Module 3: Real-time Sport Points Matrix Table per Class */}
+      {/* Real-time Sport Points Matrix Table per Class */}
+      <div className="mb-8">
         <ClassSportScoreMatrix
           matches={matches}
           sportRankings={sportRankings}
@@ -83,32 +91,31 @@ export default function StudentViewerPage() {
         />
       </div>
 
-      {/* Footer Bento Card */}
-      <footer className="mt-8 glass-panel bg-[#FFE600] dark:bg-[#1e2235] p-6 text-xs text-black dark:text-white border-[3px] border-black shadow-[6px_6px_0px_0px_#000000] flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-[#FF5C8D] border-[3px] border-black shadow-[3px_3px_0px_0px_#000] flex items-center justify-center text-black font-black text-base">
+      {/* Footer */}
+      <footer className="glass-panel p-6 text-xs text-slate-500 dark:text-slate-400 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-500 font-black">
             무
           </div>
           <div>
-            <div className="font-black text-sm text-black dark:text-white">
+            <div className="font-bold text-slate-800 dark:text-slate-200">
               무선중학교 체육대회 학생용 실시간 포털
             </div>
-            <div className="text-[11px] font-bold text-black/80 dark:text-slate-300">
+            <div className="text-[11px] text-slate-400">
               1학년(5팀) • 2학년(7팀) • 3학년(6팀) 총 18팀 리그 • 학생 조회 전용
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 text-xs font-black">
+        <div className="flex items-center gap-4 text-xs font-medium">
           <button
             onClick={() => setIsBracketOpen(true)}
-            className="neo-btn px-3 py-1.5 rounded-lg bg-white text-black hover:bg-[#00E599] flex items-center gap-1"
+            className="hover:text-indigo-500 transition-colors flex items-center gap-1"
           >
-            <Swords className="w-3.5 h-3.5 stroke-[2.5]" /> 대진표 안내
+            <Swords className="w-3.5 h-3.5" /> 대진표 안내
           </button>
-          <span className="px-3 py-1.5 rounded-lg bg-black text-white border-2 border-black">
-            © 2026 무선중학교
-          </span>
+          <span>•</span>
+          <span>© 2026 무선중학교</span>
         </div>
       </footer>
 

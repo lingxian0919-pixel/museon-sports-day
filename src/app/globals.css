@@ -3,152 +3,91 @@
 @tailwind utilities;
 
 :root {
-  --background: #fffdf5;
-  --foreground: #09090b;
-  --neo-border: #000000;
-  --neo-shadow: #000000;
-  --pop-yellow: #ffe600;
-  --pop-pink: #ff5c8d;
-  --pop-mint: #00e599;
-  --pop-blue: #38bdf8;
-  --pop-orange: #ff7a00;
-  --pop-purple: #a855f7;
+  --background: #f1f5f9;
+  --foreground: #0f172a;
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.8);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
 }
 
 .dark {
-  --background: #141624;
-  --foreground: #ffffff;
-  --neo-border: #000000;
-  --neo-shadow: #000000;
+  --background: #090d16;
+  --foreground: #f8fafc;
+  --glass-bg: rgba(15, 23, 42, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
 body {
   color: var(--foreground);
-  background-color: var(--background);
-  background-image: radial-gradient(#00000022 1.25px, transparent 1.25px);
-  background-size: 20px 20px;
+  background: var(--background);
   min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   overflow-x: hidden;
 }
 
-.dark body {
-  background-image: radial-gradient(#ffffff18 1.25px, transparent 1.25px);
+/* Glassmorphism Classes */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: 1.25rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ============================================================================
-   Neo-Brutalism + Bento Grid Core Design System
-   - 3px solid black borders (#000000)
-   - Strong offset hard shadows (6px 6px 0px #000000 / 4px 4px 0px #000000)
-   - Vivid primary pop colors & modular Bento Grid cards
-   ============================================================================ */
-
-.glass-panel,
-.neo-panel {
-  background: #ffffff;
-  border: 3px solid #000000 !important;
-  box-shadow: 6px 6px 0px 0px #000000 !important;
-  border-radius: 1.35rem;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+.glass-panel:hover {
+  border-color: rgba(99, 102, 241, 0.4);
 }
 
-.dark .glass-panel,
-.dark .neo-panel {
-  background: #1e2235;
-  border: 3px solid #000000 !important;
-  box-shadow: 6px 6px 0px 0px #000000 !important;
-}
-
-.glass-card,
-.neo-card {
-  background: #ffffff;
-  border: 3px solid #000000 !important;
-  box-shadow: 4px 4px 0px 0px #000000 !important;
+.glass-card {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 1rem;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
-.dark .glass-card,
-.dark .neo-card {
-  background: #262b42;
-  border: 3px solid #000000 !important;
-  box-shadow: 4px 4px 0px 0px #000000 !important;
+.dark .glass-card {
+  background: rgba(30, 41, 59, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.neo-card-interactive:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0px 0px #000000 !important;
-}
-
-.neo-card-interactive:active {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0px 0px #000000 !important;
-}
-
-.neo-btn {
-  border: 3px solid #000000 !important;
-  box-shadow: 3px 3px 0px 0px #000000 !important;
-  font-weight: 900;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
-}
-
-.neo-btn:hover {
-  transform: translate(-1.5px, -1.5px);
-  box-shadow: 4.5px 4.5px 0px 0px #000000 !important;
-}
-
-.neo-btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0px 0px #000000 !important;
-}
-
-.neo-badge {
-  border: 2px solid #000000 !important;
-  box-shadow: 2px 2px 0px 0px #000000 !important;
-  font-weight: 900;
-}
-
-.glass-input,
-.neo-input {
-  background: #ffffff;
-  border: 3px solid #000000 !important;
-  box-shadow: 3px 3px 0px 0px #000000 !important;
+.glass-input {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(203, 213, 225, 0.6);
   border-radius: 0.75rem;
-  font-weight: 800;
 }
 
-.dark .glass-input,
-.dark .neo-input {
-  background: #141624;
-  border: 3px solid #000000 !important;
-  box-shadow: 3px 3px 0px 0px #000000 !important;
+.dark .glass-input {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Bento Grid Modular Layout Helper */
-.bento-grid {
-  display: grid;
-  gap: 1.25rem;
-}
-
-/* Hide decorative blur blobs in Neo-Brutalist mode */
+/* Bento Grid Glowing Gradients */
 .gradient-blob {
-  display: none;
+  position: absolute;
+  filter: blur(90px);
+  z-index: 0;
+  opacity: 0.35;
+  pointer-events: none;
+  border-radius: 9999px;
 }
 
-/* Custom Neo-Brutalist Scrollbar */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #fff9db;
-  border: 2px solid #000000;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #ffe600;
-  border: 2px solid #000000;
-  border-radius: 0px;
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #ff5c8d;
+  background: rgba(148, 163, 184, 0.7);
 }
