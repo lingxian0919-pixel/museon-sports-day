@@ -128,7 +128,7 @@ export default function ClassSportScoreMatrix({
               <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
                 종목별 각 반별 포인트 계산표
                 <span className="text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/20 hidden sm:inline-block">
-                  X축: 11개 종목 • Y축: 18개 반
+                  18개 반 • 11개 종목
                 </span>
               </h2>
             </div>
@@ -204,7 +204,7 @@ export default function ClassSportScoreMatrix({
               <th className="py-3 px-3.5 font-black text-slate-800 dark:text-slate-200 w-36 sticky left-0 bg-slate-100 dark:bg-slate-800 z-30 shadow-sm border-r border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-1.5">
                   <TableIcon className="w-3.5 h-3.5 text-indigo-500" />
-                  <span>반 (Y축) \ 종목 (X축)</span>
+                  <span>반 \ 종목</span>
                 </div>
               </th>
 
@@ -359,31 +359,6 @@ export default function ClassSportScoreMatrix({
               );
             })}
           </tbody>
-
-          {/* Table Footer: Max Points per Sport */}
-          <tfoot>
-            <tr className="border-t-2 border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/90 font-black">
-              <td className="py-3 px-3.5 font-black text-slate-700 dark:text-slate-300 sticky left-0 bg-slate-100 dark:bg-slate-800 z-30 shadow-sm border-r border-slate-200 dark:border-slate-700">
-                <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
-                  <Award className="w-4 h-4 text-amber-500" />
-                  <span className="text-xs font-black">종목 배점 (1위)</span>
-                </div>
-              </td>
-
-              {SPORT_CATEGORIES.map((sport) => (
-                <td
-                  key={`max-${sport.id}`}
-                  className="py-3 px-1.5 text-center border-r border-slate-200/50 dark:border-slate-700/50 text-[11px] font-bold text-amber-700 dark:text-amber-400 bg-amber-500/5"
-                >
-                  1위 {sport.totalPoints}pt
-                </td>
-              ))}
-
-              <td className="py-3 px-2 text-center border-l-2 border-slate-300 dark:border-slate-700 text-xs font-black text-indigo-600 dark:text-indigo-400">
-                11종목 합산
-              </td>
-            </tr>
-          </tfoot>
         </table>
       </div>
 
