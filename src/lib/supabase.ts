@@ -183,3 +183,235 @@ export async function addRankingScore(nickname: string, score: number): Promise<
 
   return INITIAL_RANKINGS;
 }
+
+// ==========================================
+// Matches & Sport Rankings DB Sync Layer
+// ==========================================
+
+import { Match, SportRankingEntry, MatchStatus } from './types';
+
+export function matchToDb(m: Match) {
+  return {
+    id: m.id,
+    sport: m.sport,
+    round: m.round,
+    team_a: m.teamA,
+    team_b: m.teamB,
+    score_a: m.scoreA,
+    score_b: m.scoreB,
+    status: m.status,
+    winner_team: m.winnerTeam || null,
+    time: m.time || '',
+    court: m.court || '',
+    points_for_winner: m.pointsForWinner || 100,
+    grade: m.grade || 1,
+    match_number: m.matchNumber || null,
+    match_letter: m.matchLetter || null,
+    bracket_label: m.bracketLabel || null,
+    source_match_a_id: m.sourceMatchAId || null,
+    source_match_b_id: m.sourceMatchBId || null,
+    updated_at: new Date().toISOString(),
+  };
+}
+
+export function dbToMatch(row: any): Match {
+  return {
+    id: row.id,
+    sport: row.sport,
+    round: row.round,
+    teamA: typeof row.team_a === 'string' ? JSON.parse(row.team_a) : row.team_a,
+    teamB: typeof row.team_b === 'string' ? JSON.parse(row.team_b) : row.team_b,
+    scoreA: Number(row.score_a) || 0,
+    scoreB: Number(row.score_b) || 0,
+    status: (row.status as MatchStatus) || 'scheduled',
+    winnerTeam: (row.winner_team as 'teamA' | 'teamB' | 'draw') || undefined,
+    time: row.time || '',
+    court: row.court || '',
+    pointsForWinner: Number(row.points_for_winner) || 100,
+    grade: Number(row.grade) || 1,
+    matchNumber: row.match_number !== null && row.match_number !== undefined ? Number(row.match_number) : undefined,
+    matchLetter: row.match_letter || undefined,
+    bracketLabel: row.bracket_label || undefined,
+    sourceMatchAId: row.source_match_a_id || undefined,
+    sourceMatchBId: row.source_match_b_id || undefined,
+  };
+}
+
+export function sportRankingToDb(r: SportRankingEntry) {
+  return {
+    id: r.id,
+    sport_id: r.sportId,
+    grade: r.grade,
+    class_num: r.classNum,
+    rank: r.rank,
+    record: r.record || '',
+    points: r.points,
+    updated_at: new Date().toISOString(),
+  };
+}
+
+export function dbToSportRanking(row: any): SportRankingEntry {
+  return {
+    id: row.id,
+    sportId: row.sport_id,
+    grade: Number(row.grade) || 1,
+    classNum: Number(row.class_num) || 1,
+    rank: Number(row.rank) || 0,
+    record: row.record || '',
+    points: Number(row.points) || 0,
+  };
+}
+
+export async function verifyScorerPin(pin: string): Promise<boolean> {
+  if (!supabase) return pin === '2026';
+  try {
+    const { data, error } = await supabase.rpc('verify_scorer_pin', { pin });
+    if (error) {
+      console.warn('verify_scorer_pin error:', error);
+      return pin === '2026';
+    }
+    return Boolean(data);
+  } catch {
+    return pin === '2026';
+  }
+}
+
+export async function fetchMatchesFromDb(): Promise<Match[] | null> {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase
+      .from('matches')
+      .select('*')
+      .order('grade', { ascending: true })
+      .order('match_number', { ascending: true });
+
+    if (error || !data || data.length === 0) {
+      return null;
+    }
+    return data.map(dbToMatch);
+  } catch (err) {
+    console.error('fetchMatchesFromDb error:', err);
+    return null;
+  }
+}
+
+export async function fetchSportRankingsFromDb(): Promise<SportRankingEntry[] | null> {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase
+      .from('sport_rankings')
+      .select('*')
+      .order('grade', { ascending: true })
+      .order('class_num', { ascending: true });
+
+    if (error || !data || data.length === 0) {
+      return null;
+    }
+    return data.map(dbToSportRanking);
+  } catch (err) {
+    console.error('fetchSportRankingsFromDb error:', err);
+    return null;
+  }
+}
+
+export async function updateMatchScoreInDb(
+  matchId: string,
+  scoreA: number,
+  scoreB: number,
+  status: string,
+  pin: string
+): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase.rpc('rpc_update_match_score', {
+    p_match_id: matchId,
+    p_score_a: scoreA,
+    p_score_b: scoreB,
+    p_status: status,
+    p_pin: pin,
+  });
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function finishMatchInDb(
+  matchId: string,
+  winner: 'teamA' | 'teamB',
+  pin: string
+): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase.rpc('rpc_finish_match', {
+    p_match_id: matchId,
+    p_winner: winner,
+    p_pin: pin,
+  });
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function cancelWinnerInDb(
+  matchId: string,
+  pin: string
+): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase.rpc('rpc_cancel_winner', {
+    p_match_id: matchId,
+    p_pin: pin,
+  });
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function updateMatchStatusInDb(
+  matchId: string,
+  status: string,
+  pin: string
+): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase.rpc('rpc_update_match_status', {
+    p_match_id: matchId,
+    p_status: status,
+    p_pin: pin,
+  });
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function updateSportRankingInDb(
+  id: string,
+  rank: number,
+  record: string,
+  points: number,
+  pin: string
+): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase.rpc('rpc_update_sport_ranking', {
+    p_id: id,
+    p_rank: rank,
+    p_record: record,
+    p_points: points,
+    p_pin: pin,
+  });
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function resetAllDataInDb(
+  cleanMatches: Match[],
+  cleanRankings: SportRankingEntry[],
+  pin: string
+): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase.rpc('rpc_reset_all_data', {
+    p_clean_matches: cleanMatches.map(matchToDb),
+    p_clean_rankings: cleanRankings.map(sportRankingToDb),
+    p_pin: pin,
+  });
+  if (error) {
+    throw new Error(error.message);
+  }
+}

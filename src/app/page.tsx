@@ -34,12 +34,16 @@ export default function StudentViewerPage() {
 
       {/* Top Banner: Mode Indicator & Announcements */}
       <div className="mb-4 glass-card px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-700 dark:text-slate-300 border-blue-500/30">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-600 dark:text-blue-400 font-black text-[11px] flex items-center gap-1">
             <Eye className="w-3.5 h-3.5" /> 학생 참관 화면
           </span>
-          <span className="truncate">
-            실시간 득점 및 18개 반 순위가 자동 반영됩니다. (조회 전용)
+          <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold text-[10px] flex items-center gap-1 border border-emerald-500/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
+            실시간 공용 DB 자동 동기화
+          </span>
+          <span className="truncate hidden md:inline text-slate-500 dark:text-slate-400">
+            기록원이 점수를 입력하면 모든 기기에 즉시 실시간 반영됩니다.
           </span>
         </div>
         <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
