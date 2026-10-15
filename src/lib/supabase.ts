@@ -2,8 +2,11 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Post, RankingItem } from './types';
 import { INITIAL_POSTS, INITIAL_RANKINGS } from './mockData';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://kcjfffzmijvmqkjtmecu.supabase.co';
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjamZmZnptaWp2bXFranRtZWN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNzU1ODMsImV4cCI6MjEwNjg1MTU4M30.Qp3r_HyErs31Ya1mNaUia5S_BDsaD3l2MNM2gs4oL3w';
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
